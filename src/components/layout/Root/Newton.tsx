@@ -15,13 +15,25 @@ import {
   Tbody,
   TableContainer,
   grid,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { evaluate, derivative } from "mathjs";
 import { MathJax } from "better-react-mathjax";
+import { on } from "stream";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function Newton() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const [tolence, setTolence] = React.useState(false);
+
   const [functionInput, setFunctionInput] = React.useState("x^2 - 4");
   const [xl, setxl] = React.useState(0.0);
   const [X, setX] = React.useState(0.0);
@@ -35,6 +47,24 @@ function Newton() {
   const [datachart, setDatachart] = React.useState([{ x: 0, y: 0 }]);
 
   const calnewton = (xintial: number) => {
+    const fx = (x: number) => {
+      try {
+        const f = evaluate(functionInput, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+
+    const fxdiff = (x: number) => {
+      try {
+        const f = evaluate(derivative(functionInput, "x").toString(), { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+
     let fxm,
       fxmprime,
       xm = xintial,
@@ -46,8 +76,8 @@ function Newton() {
     const graphdata = [];
 
     do {
-      fxm = evaluate(functionInput, { x: xm });
-      fxmprime = evaluate(derivative(functionInput, "x").toString(), { x: xm });
+      fxm = fx(xm);
+      fxmprime = fxdiff(xm);
 
       if (fxmprime === 0) {
         return;
@@ -83,20 +113,11 @@ function Newton() {
   const Chartdata = {
     data: [
       {
-        name: "X",
         x: datachart.map((d) => d.x),
         y: datachart.map((d) => d.y),
-        type: "scatter",
-        mode: "markers",
+        mode: "lines+markers",
         marker: { color: "red" },
-      },
-      {
-        name: "F(x)",
-        x: datachart.map((d) => d.x),
-        y: datachart.map((d) => d.y),
-        type: "scatter",
-        mode: "lines",
-        line: { color: "blue" },
+        line: { color: "blue", shape: "spline" },
       },
     ],
 
@@ -114,8 +135,9 @@ function Newton() {
   const Checkfunc = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
+      setTolence(false);
     } catch {
-      alert("Please enter the correct function");
+      setTolence(true);
     }
   };
 
@@ -126,6 +148,31 @@ function Newton() {
 
   return (
     <>
+      {tolence && (
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Invalid Function!!
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text>Please enter the correct function</Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button colorScheme="red" onClick={onClose} ml={3}>
+                  Close
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      )}
       <Box
         textAlign="center"
         fontSize="xl"
@@ -201,7 +248,10 @@ function Newton() {
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
-                  onClick={calroot}
+                  onClick={() => {
+                    calroot();
+                    onOpen();
+                  }}
                 >
                   Calculate
                 </Button>

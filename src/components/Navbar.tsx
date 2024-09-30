@@ -27,7 +27,13 @@ function Navbar() {
         <Spacer />
         <ButtonGroup gap="5" padding={2}>
           <Link href="/">
-            <Button colorScheme="teal" mr={50} width={90} variant="ghost">
+            <Button
+              colorScheme="teal"
+              borderRadius={10}
+              mr={50}
+              width={90}
+              variant="ghost"
+            >
               Home
             </Button>
           </Link>

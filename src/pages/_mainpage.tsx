@@ -1,8 +1,20 @@
 import * as React from "react";
-import { ChakraProvider, Box, Button, ButtonGroup } from "@chakra-ui/react";
+import {
+  ChakraProvider,
+  Box,
+  Button,
+  ButtonGroup,
+  Text,
+  Stack,
+  StackDivider,
+  Heading,
+  Card,
+  CardHeader,
+  CardBody,
+} from "@chakra-ui/react";
 import theme from "./theme";
-import Rootofequations from "./Root-of-Equations";
-import LinearAlgebra from "./Linear-Algebra";
+import Rootofequations from "../components/layout/Root-of-Equations";
+import LinearAlgebra from "../components/layout/Linear-Algebra";
 
 function Main() {
   const [Head, setHead] = React.useState(" ");
@@ -56,7 +68,43 @@ function Main() {
           </ButtonGroup>
         </Box>
       </Box>
-      <Box textAlign="center" fontSize="xl" padding={5} position="relative">
+      <Box textAlign="center" fontSize="xl" padding={20} position="relative">
+        {Head === " " && (
+          <Card>
+            <CardHeader>
+              <Heading size="md">Client Report</Heading>
+            </CardHeader>
+
+            <CardBody>
+              <Stack divider={<StackDivider />} spacing="4">
+                <Box>
+                  <Heading size="xs" textTransform="uppercase">
+                    Summary
+                  </Heading>
+                  <Text pt="2" fontSize="sm">
+                    View a summary of all your clients over the last month.
+                  </Text>
+                </Box>
+                <Box>
+                  <Heading size="xs" textTransform="uppercase">
+                    Overview
+                  </Heading>
+                  <Text pt="2" fontSize="sm">
+                    Check out the overview of your clients.
+                  </Text>
+                </Box>
+                <Box>
+                  <Heading size="xs" textTransform="uppercase">
+                    Analysis
+                  </Heading>
+                  <Text pt="2" fontSize="sm">
+                    See a detailed analysis of all your business clients.
+                  </Text>
+                </Box>
+              </Stack>
+            </CardBody>
+          </Card>
+        )}
         {Head === "Rootofequations" && <Rootofequations />}
         {Head === "LinearAlgebra" && <LinearAlgebra />}
       </Box>

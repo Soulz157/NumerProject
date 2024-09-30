@@ -14,12 +14,24 @@ import {
   Th,
   Td,
   TableContainer,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { evaluate } from "mathjs";
 import { MathJax } from "better-react-mathjax";
+import { on } from "events";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 function Graphical() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const [tolence, setTolence] = React.useState(false);
+
   const [functionInput, setFunctionInput] = React.useState("x^2 - 4");
   const [xstart, setxstart] = React.useState(0.0);
   const [xend, setxend] = React.useState(0.0);
@@ -35,6 +47,15 @@ function Graphical() {
   const [datachart, setDatachart] = React.useState([{ x: 0, y: 0 }]);
 
   const calGraphical = (xl: number, xr: number) => {
+    const fx = (x: number) => {
+      try {
+        const f = evaluate(functionInput, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+
     let Fxl,
       // ea = 1,
       Fxr,
@@ -47,8 +68,8 @@ function Graphical() {
     const graphdata = [];
 
     for (let i = xl; i < xr; i += 0.01) {
-      Fxl = evaluate(functionInput, { x: i });
-      Fxr = evaluate(functionInput, { x: i + 0.01 });
+      Fxl = fx(i);
+      Fxr = fx(i + 0.01);
       if (Fxl * Fxr < 0) {
         l = i;
         r = i + 0.01;
@@ -57,10 +78,10 @@ function Graphical() {
     }
 
     while (l <= r && iter < 50) {
-      const fx = evaluate(functionInput, { x: l });
-      const fxplus = evaluate(functionInput, { x: l + e });
+      const fxs = fx(l);
+      const fxplus = fx(l + e);
 
-      if (fx * fxplus < 0) {
+      if (fxs * fxplus < 0) {
         break;
       }
 
@@ -71,7 +92,7 @@ function Graphical() {
         xm: l,
       });
 
-      graphdata.push({ x: l, y: fx });
+      graphdata.push({ x: l, y: fxs });
 
       l += e;
       iter++;
@@ -88,19 +109,11 @@ function Graphical() {
   const Chartdata = {
     data: [
       {
-        name: "X",
         x: datachart.map((d) => d.x),
         y: datachart.map((d) => d.y),
         type: "scatter",
-        mode: "markers",
+        mode: "lines+markers",
         marker: { color: "red" },
-      },
-      {
-        name: "F(x)",
-        x: datachart.map((d) => d.x),
-        y: datachart.map((d) => d.y),
-        type: "scatter",
-        mode: "lines",
         line: { color: "blue" },
       },
     ],
@@ -119,8 +132,9 @@ function Graphical() {
   const Checkfunction = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
+      setTolence(false);
     } catch {
-      return 0;
+      setTolence(true);
     }
   };
 
@@ -132,6 +146,31 @@ function Graphical() {
 
   return (
     <>
+      {tolence && (
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Invalid Function!!
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text>Please enter the correct function</Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button colorScheme="red" onClick={onClose} ml={3}>
+                  Close
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      )}
       <Box
         textAlign="center"
         fontSize="xl"
@@ -227,7 +266,10 @@ function Graphical() {
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
-                  onClick={calroot}
+                  onClick={() => {
+                    calroot();
+                    onOpen();
+                  }}
                 >
                   Calculate
                 </Button>

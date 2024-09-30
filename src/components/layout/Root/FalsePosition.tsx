@@ -14,14 +14,24 @@ import {
   Th,
   Td,
   TableContainer,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { evaluate } from "mathjs";
 import { MathJax } from "better-react-mathjax";
-import AlertDialogExample from "../../alertDialog";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function FalsePosition() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const [tolence, setTolence] = React.useState(false);
+
   const [functionInput, setFunctionInput] = React.useState("x^2 - 4");
   const [xl, setxl] = React.useState(0.0);
   const [xr, setxr] = React.useState(0.0);
@@ -40,6 +50,15 @@ function FalsePosition() {
     Math.abs((xnew - xold) / xnew) * 100;
 
   const calFalsePosition = (xl: number, xr: number) => {
+    const fx = (x: number) => {
+      try {
+        const f = evaluate(functionInput, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+
     let Fxl,
       Fxr,
       Fx1,
@@ -52,10 +71,12 @@ function FalsePosition() {
     const graphdata = [];
 
     do {
-      Fxl = evaluate(functionInput, { x: xl });
-      Fxr = evaluate(functionInput, { x: xr });
+      Fxl = fx(xl);
+      Fxr = fx(xr);
+
       x1 = (xl * Fxr - xr * Fxl) / (Fxr - Fxl);
-      Fx1 = evaluate(functionInput, { x: x1 });
+      Fx1 = fx(x1);
+
       if (Fx1 * Fxr > 0) {
         ea = error(x1, xr);
         obj.push({
@@ -92,20 +113,12 @@ function FalsePosition() {
   const Chartdata = {
     data: [
       {
-        name: "Xm",
         x: datachart.map((d) => d.x),
         y: datachart.map((d) => d.y),
         type: "scatter",
-        mode: "markers",
+        mode: "lines+markers",
         marker: { color: "red" },
-      },
-      {
-        name: "F(x)",
-        x: datachart.map((d) => d.x),
-        y: datachart.map((d) => d.y),
-        type: "scatter",
-        mode: "lines",
-        line: { color: "blue" },
+        line: { color: "blue", shape: "spline" },
       },
     ],
 
@@ -123,18 +136,44 @@ function FalsePosition() {
   const Checkfunc = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
+      setTolence(false);
     } catch {
-      alert("Please enter the correct function");
-      <AlertDialogExample />;
+      setTolence(true);
     }
   };
 
   const calroot = () => {
     Checkfunc(xl);
+
     calFalsePosition(xl, xr);
   };
   return (
     <>
+      {tolence && (
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Invalid Function!!
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text>Please enter the correct function</Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button colorScheme="red" onClick={onClose} ml={3}>
+                  Close
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      )}
       <Box
         textAlign="center"
         fontSize="xl"
@@ -229,7 +268,10 @@ function FalsePosition() {
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
-                  onClick={calroot}
+                  onClick={() => {
+                    calroot();
+                    onOpen();
+                  }}
                 >
                   Calculate
                 </Button>

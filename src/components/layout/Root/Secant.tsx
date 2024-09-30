@@ -14,13 +14,25 @@ import {
   Thead,
   Tbody,
   TableContainer,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { evaluate, derivative } from "mathjs";
 import { MathJax } from "better-react-mathjax";
+import { on } from "events";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function Secant() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const [tolence, setTolence] = React.useState(false);
+
   const [functionInput, setFunctionInput] = React.useState("x^2 - 4");
   const [xl, setxl] = React.useState(0.0);
   const [X, setX] = React.useState(0.0);
@@ -35,6 +47,24 @@ function Secant() {
   const [datachart, setDatachart] = React.useState([{ x: 0, y: 0 }]);
 
   const calsecant = (xl: number) => {
+    const fx = (x: number) => {
+      try {
+        const f = evaluate(functionInput, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+
+    const fxdiff = (x: number) => {
+      try {
+        const f = evaluate(derivative(functionInput, "x").toString(), { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+
     let x2,
       x0 = xl;
     let i = 0;
@@ -43,14 +73,14 @@ function Secant() {
     const e = 0.000001;
     const MAX = 50;
 
-    const Fx0 = evaluate(functionInput, { x: x0 });
-    const Fx0p = evaluate(derivative(functionInput, "x").toString(), { x: x0 });
+    const Fx0 = fx(x0);
+    const Fx0p = fxdiff(x0);
     let x1 = x0 - Fx0 / Fx0p;
 
-    const Fx1 = evaluate(functionInput, { x: x1 });
+    const Fx1 = fx(x1);
     do {
       x2 = x1 - (Fx1 * (x1 - x0)) / (Fx1 - Fx0);
-      const Fx2 = evaluate(functionInput, { x: x2 });
+      const Fx2 = fx(x2);
       x0 = x1;
       x1 = x2;
       obj.push({
@@ -76,19 +106,10 @@ function Secant() {
   const Chartdata = {
     data: [
       {
-        name: "X",
         x: datachart.map((d) => d.x),
         y: datachart.map((d) => d.y),
-        type: "scatter",
-        mode: "markers",
+        mode: "lines+markers",
         marker: { color: "red" },
-      },
-      {
-        name: "F(x)",
-        x: datachart.map((d) => d.x),
-        y: datachart.map((d) => d.y),
-        type: "scatter",
-        mode: "lines",
         line: { color: "blue" },
       },
     ],
@@ -107,10 +128,12 @@ function Secant() {
   const Checkfunc = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
+      setTolence(false);
     } catch {
-      alert("Please enter the correct function");
+      setTolence(true);
     }
   };
+
   const calroot = () => {
     Checkfunc(xl);
     calsecant(xl);
@@ -118,6 +141,31 @@ function Secant() {
 
   return (
     <>
+      {tolence && (
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Invalid Function!!
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text>Please enter the correct function</Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button colorScheme="red" onClick={onClose} ml={3}>
+                  Close
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      )}
       <Box
         textAlign="center"
         fontSize="xl"
@@ -193,7 +241,10 @@ function Secant() {
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
-                  onClick={calroot}
+                  onClick={() => {
+                    calroot();
+                    onOpen();
+                  }}
                 >
                   Calculate
                 </Button>

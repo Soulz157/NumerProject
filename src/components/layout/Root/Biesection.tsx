@@ -15,15 +15,22 @@ import {
   Td,
   TableContainer,
   useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { evaluate } from "mathjs";
 import { MathJax } from "better-react-mathjax";
-import AlertDialogExample from "../../alertDialog";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function Biesection() {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+
   const [functionInput, setFunctionInput] = useState("x^2 - 4");
   const [xl, setxl] = React.useState(0);
   const [xr, setxr] = React.useState(0.0);
@@ -106,19 +113,11 @@ function Biesection() {
   const Chartdata = {
     data: [
       {
-        name: "Xm",
         x: datachart.map((d) => d.x),
         y: datachart.map((d) => d.y),
         type: "scatter",
-        mode: "markers",
+        mode: "lines+markers",
         marker: { color: "red" },
-      },
-      {
-        name: "F(x)",
-        x: datachart.map((d) => d.x),
-        y: datachart.map((d) => d.y),
-        type: "scatter",
-        mode: "lines",
         line: { color: "blue" },
       },
     ],
@@ -139,7 +138,6 @@ function Biesection() {
       evaluate(functionInput, { x: x });
       setTolence(false);
     } catch {
-      // alert("Please enter the correct function");
       setTolence(true);
     }
   };
@@ -153,6 +151,31 @@ function Biesection() {
 
   return (
     <>
+      {tolence && (
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Invalid Function!!
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text>Please enter the correct function</Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button colorScheme="red" onClick={onClose} ml={3}>
+                  Close
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      )}
       <Box
         textAlign="center"
         fontSize="xl"
@@ -247,7 +270,10 @@ function Biesection() {
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
-                  onClick={calroot}
+                  onClick={() => {
+                    calroot();
+                    onOpen();
+                  }}
                 >
                   Calculate
                 </Button>

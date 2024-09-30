@@ -13,28 +13,51 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { det } from "mathjs";
 
 function Cramer() {
   const [size, setSize] = React.useState(0);
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
   const [constants, setConstants] = React.useState<number[]>([]);
+  const [result, setResult] = React.useState<number[]>([]);
   const [row, setRow] = React.useState(0);
   const [col, setCol] = React.useState(0);
   const B = [matrix];
 
   const Showmatrix = (valueAsNumber: number) => {
     setSize(valueAsNumber);
+
     const newMatrix = Array.from({ length: valueAsNumber }, () =>
       Array(valueAsNumber).fill(0)
     );
-
     setMatrix(newMatrix);
-
+    setResult(newMatrix[0]);
     setRow(size);
     setCol(size);
     console.log(matrix);
   };
 
+  const calcramer = (size: number, A: number[][], B: number[]) => {
+    const detA = det(A);
+    const detX: number[] = [];
+    const X: number[] = [];
+
+    for (let i = 0; i < size; i++) {
+      const newMatrix = A.map((row) => [...row]);
+      for (let j = 0; j < size; j++) {
+        newMatrix[j][i] = B[j];
+      }
+      detX.push(det(newMatrix));
+      X.push(detX[i] / detA);
+    }
+
+    setResult(X);
+    console.log(X);
+  };
+
+  const calroot = () => {
+    calcramer(size, matrix, constants);
+  };
   return (
     <>
       <Container maxW="2xl" centerContent mt={30}>
@@ -45,7 +68,7 @@ function Cramer() {
           fontSize="xl"
           maxW="md"
         >
-          <MathJax>{"`Matrix N*N`"}</MathJax>
+          <MathJax>{"`MatrixN*N`"}</MathJax>
           <NumberInput
             m={2}
             defaultValue={0}
@@ -84,7 +107,6 @@ function Cramer() {
                             variant="filled"
                             size="sm"
                             defaultValue="0"
-                            min={0}
                             _placeholder={{ opacity: 1, color: "gray.500" }}
                             isInvalid
                             errorBorderColor="gray.500"
@@ -120,7 +142,6 @@ function Cramer() {
                               variant="filled"
                               size="sm"
                               defaultValue="0"
-                              min={0}
                               _placeholder={{ opacity: 1, color: "gray.500" }}
                               isInvalid
                               errorBorderColor="gray.500"
@@ -162,6 +183,7 @@ function Cramer() {
             borderColor={"gray.500"}
             fontWeight="bold"
             fontSize={"lg"}
+            onClick={calroot}
           >
             Calculate
           </Button>
@@ -171,52 +193,26 @@ function Cramer() {
             Result
           </Text>
           <Box padding={2}>
-            <Text p={2} fontSize={"md"}>
-              <MathJax>
-                {"`X1 :`"}{" "}
-                <Input
-                  variant="filled"
-                  width={"max-content"}
-                  size="sm"
-                  placeholder={"-"}
-                  _placeholder={{ opacity: 1, color: "gray.500" }}
-                  isReadOnly
-                  errorBorderColor="gray.500"
-                />
-              </MathJax>
-            </Text>
-          </Box>
-          <Box padding={2}>
-            <Text p={2} fontSize={"md"}>
-              <MathJax>
-                {"`X2 :`"}{" "}
-                <Input
-                  variant="filled"
-                  width={"max-content"}
-                  size="sm"
-                  placeholder={"-"}
-                  _placeholder={{ opacity: 1, color: "gray.500" }}
-                  isReadOnly
-                  errorBorderColor="gray.500"
-                />
-              </MathJax>
-            </Text>
-          </Box>
-          <Box padding={2}>
-            <Text p={2} fontSize={"md"}>
-              <MathJax>
-                {"`X3 :`"}{" "}
-                <Input
-                  variant="filled"
-                  width={"max-content"}
-                  size="sm"
-                  placeholder={"-"}
-                  _placeholder={{ opacity: 1, color: "gray.500" }}
-                  isReadOnly
-                  errorBorderColor="gray.500"
-                />
-              </MathJax>
-            </Text>
+            {size > 0 &&
+              result.map((col, j) => (
+                <>
+                  <Text p={2} fontSize={"md"}>
+                    <MathJax>
+                      {"`X" + (j + 1) + " :`"}{" "}
+                      <Input
+                        variant="filled"
+                        width={"max-content"}
+                        size="sm"
+                        value={result[j]}
+                        placeholder={"-"}
+                        _placeholder={{ opacity: 1, color: "gray.500" }}
+                        isReadOnly
+                        errorBorderColor="gray.500"
+                      />
+                    </MathJax>
+                  </Text>
+                </>
+              ))}
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>

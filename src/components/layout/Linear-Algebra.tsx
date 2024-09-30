@@ -3,6 +3,7 @@ import { Box, AbsoluteCenter, Text, Select } from "@chakra-ui/react";
 import Biesection from "@/components/layout/Root/Biesection";
 import Newton from "@/components/layout/Root/Newton";
 import Cramer from "@/components/layout/Linear/Cramer";
+import GaussElimination from "./Linear/GaussElimination";
 
 function LinearPage() {
   const [solution, setSolution] = React.useState(" ");
@@ -32,7 +33,7 @@ function LinearPage() {
       </Box>
       <Box mt={5}>
         {solution === "Cramerrule" && <Cramer />}
-        {solution === "BisectionMethod" && <Biesection />}
+        {solution === "GaussElimination" && <GaussElimination />}
         {solution === "NewtonRapshon" && <Newton />}
       </Box>
     </>

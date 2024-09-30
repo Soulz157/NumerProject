@@ -17,12 +17,23 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
-import AlertDialogExample from "../../alertDialog";
+import { line } from "framer-motion/client";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function Onepoint() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const [tolence, setTolence] = React.useState(false);
+
   const [functionInput, setFunctionInput] = useState("x^2 - 4");
   const [xl, setxl] = useState(0.0);
   const [X, setX] = useState(0.0);
@@ -30,7 +41,6 @@ function Onepoint() {
     {
       iteration: 0,
       xl: 0,
-      xr: 0,
       xm: 0,
     },
   ]);
@@ -40,32 +50,40 @@ function Onepoint() {
     Math.abs((xnew - xold) / xnew) * 100;
 
   const calonepoint = (xl: number) => {
+    const fx = (x: number) => {
+      try {
+        const f = evaluate(functionInput, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+
     let ea = 0,
       Fxm,
-      xm,
+      xm = xl,
       i = 0;
     const e = 0.000001;
     const MAX = 50;
     const obj = [];
     const graphdata = [];
 
-    const Fxl = evaluate(functionInput, { x: xl });
-    xm = Fxl;
     do {
-      Fxm = evaluate(functionInput, { x: xm });
+      Fxm = fx(xm);
       if (Fxm === 0) {
         break;
       }
-      ea = error(xm, Fxm);
-      xm = Fxm;
-
-      i++;
       obj.push({
         iteration: i,
         xl: xl,
         xm: xm,
       });
       graphdata.push({ x: xm, y: Fxm });
+
+      ea = error(xm, Fxm);
+      xm = Fxm;
+
+      i++;
     } while (ea > e && i < MAX);
 
     if (xm !== undefined) {
@@ -74,6 +92,7 @@ function Onepoint() {
       setX(xm);
     }
   };
+
   const Chartdata = {
     data: [
       {
@@ -81,16 +100,25 @@ function Onepoint() {
         x: datachart.map((d) => d.x),
         y: datachart.map((d) => d.y),
         type: "scatter",
-        mode: "markers",
+        mode: "lines+markers",
+        line: { color: "blue", shape: "hv" },
         marker: { color: "red" },
       },
       {
-        name: "F(x)",
+        name: "g(x)",
+        x: datachart.map((d) => d.x),
+        y: datachart.map((d) => d.x),
+        type: "scatter",
+        mode: "lines",
+        line: { color: "green", shape: "spline" },
+      },
+      {
+        name: "f(x)",
         x: datachart.map((d) => d.x),
         y: datachart.map((d) => d.y),
         type: "scatter",
         mode: "lines",
-        line: { color: "blue" },
+        line: { color: "cyan ", shape: "spline" },
       },
     ],
 
@@ -108,9 +136,9 @@ function Onepoint() {
   const Checkfunc = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
+      setTolence(false);
     } catch {
-      alert("Please enter the correct function");
-      <AlertDialogExample />;
+      setTolence(true);
     }
   };
 
@@ -121,6 +149,31 @@ function Onepoint() {
 
   return (
     <>
+      {tolence && (
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Invalid Function!!
+              </AlertDialogHeader>
+
+              <AlertDialogBody>
+                <Text>Please enter the correct function</Text>
+              </AlertDialogBody>
+
+              <AlertDialogFooter>
+                <Button colorScheme="red" onClick={onClose} ml={3}>
+                  Close
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      )}
       <Box
         textAlign="center"
         fontSize="xl"
@@ -196,7 +249,10 @@ function Onepoint() {
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
-                  onClick={calroot}
+                  onClick={() => {
+                    calroot();
+                    onOpen();
+                  }}
                 >
                   Calculate
                 </Button>
