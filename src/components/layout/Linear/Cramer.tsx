@@ -11,28 +11,25 @@ import {
   NumberDecrementStepper,
   Button,
   Stack,
-  useDisclosure,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
+  // useDisclosure,
+  // AlertDialog,
+  // AlertDialogBody,
+  // AlertDialogFooter,
+  // AlertDialogHeader,
+  // AlertDialogContent,
+  // AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
-import { det, string } from "mathjs";
-import { on } from "events";
+import { det } from "mathjs";
 
 function Cramer() {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const cancelRef = React.useRef<HTMLButtonElement>(null);
+  // const { isOpen, onOpen, onClose } = useDisclosure();
+  // const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const [size, setSize] = React.useState(0);
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
   const [constants, setConstants] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
-  const [row, setRow] = React.useState(0);
-  const [col, setCol] = React.useState(0);
   const B = [matrix];
   const [mathExpression, setmathExpression] = React.useState([
     {
@@ -55,8 +52,6 @@ function Cramer() {
     );
     setMatrix(newMatrix);
     setResult(newMatrix[0]);
-    setRow(size);
-    setCol(size);
     console.log(matrix);
   };
 
@@ -81,12 +76,12 @@ function Cramer() {
       text.push({
         i: `X ${(i + 1).toString()}`,
         part: "{" + DetAi_text + "}",
-        divide: "`{`" + `${detA.toString()}` + "`}`",
+        divide: "`{`" + `${DetA.toString()}` + "`}`",
         result: X[i].toString(),
       });
     }
 
-    setResult(X);
+    setResult(X.map((num) => parseFloat(num.toFixed(6))));
     setmathExpression(text);
     console.log(X);
     console.log(text);

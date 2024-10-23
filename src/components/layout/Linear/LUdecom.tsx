@@ -1,67 +1,89 @@
 import React from "react";
 import {
   Box,
-  Text,
+  Button,
   Container,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberDecrementStepper,
   NumberInputStepper,
-  Button,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Text,
+  Stack,
+  Input,
   useDisclosure,
   AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
-  Input,
-  Stack,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 
-function GaussJordan() {
+function LUdecom() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
-  const [size, setSize] = React.useState(0);
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
+  const [size, setSize] = React.useState(0);
   const [constants, setConstants] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
   const B = [matrix];
 
-  const calGaussJordan = (size: number, a: number[][], b: number[]) => {
-    const X: number[] = [];
+  const calLU = (size: number, a: number[][], b: number[]) => {
     const n = size;
     const A = a.map((row) => [...row]);
     const B = [...b];
 
-    for (let i = 0; i < n; i++) {
-      const divisor = A[i][i];
-      for (let j = i; j < n; j++) {
-        A[i][j] /= divisor;
-      }
-      B[i] /= divisor;
-      for (let k = i; k < n; k++) {
-        if (k === i) continue;
-        const ratio = A[k][i];
-        for (let j = i; j < n; j++) {
-          A[k][j] -= ratio * A[i][j];
-        }
-        B[k] -= ratio * B[i];
-      }
+    const L = Array.from({ length: n }, () => Array(n).fill(0));
+    const U = Array.from({ length: n }, () => Array(n).fill(0));
+    const X = Array(n).fill(0);
+    const Y = Array(n).fill(0);
 
-      // console.log(A);
-      // console.log(B);
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        if (j < i) {
+          L[j][i] = 0;
+        } else {
+          L[j][i] = A[j][i];
+          for (let k = 0; k < j; k++) {
+            L[j][i] -= L[j][k] * U[k][i];
+          }
+        }
+      }
+      //   console.log(L);
+      for (let j = 0; j < n; j++) {
+        if (j < i) {
+          U[i][j] = 0;
+          // } else if (j === i) {
+          //   U[i][j] = 1;
+        } else {
+          U[i][j] = A[i][j] / L[i][i];
+          for (let k = 0; k < i; k++) {
+            U[i][j] -= (L[i][k] * U[k][j]) / L[i][i];
+          }
+        }
+      }
+      //   console.log(U);
     }
 
+    //L * Y = B
     for (let i = 0; i < n; i++) {
-      X[i] = B[i];
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        X[i] -= A[i][j] * B[j];
+      Y[i] = B[i];
+      for (let j = 0; j < i; j++) {
+        Y[i] -= L[i][j] * Y[j];
       }
+      Y[i] = Y[i] / L[i][i];
+    }
+
+    //U * X = Y
+    for (let i = n - 1; i >= 0; i--) {
+      X[i] = Y[i];
+      for (let j = i + 1; j < n; j++) {
+        X[i] -= U[i][j] * X[j];
+      }
+      //   console.log(X);
     }
 
     setResult(X.map((num) => parseFloat(num.toFixed(6))));
@@ -69,7 +91,6 @@ function GaussJordan() {
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber >= 8) {
-      onOpen();
       return;
     }
 
@@ -84,9 +105,8 @@ function GaussJordan() {
   };
 
   const calroot = () => {
-    calGaussJordan(size, matrix, constants);
+    calLU(size, matrix, constants);
   };
-
   return (
     <>
       <Container maxW="2xl" centerContent mt={30}>
@@ -279,4 +299,4 @@ function GaussJordan() {
   );
 }
 
-export default GaussJordan;
+export default LUdecom;

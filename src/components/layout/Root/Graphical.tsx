@@ -24,7 +24,6 @@ import {
 } from "@chakra-ui/react";
 import { evaluate } from "mathjs";
 import { MathJax } from "better-react-mathjax";
-import { on } from "events";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 function Graphical() {

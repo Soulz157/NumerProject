@@ -15,6 +15,7 @@ import {
 import theme from "./theme";
 import Rootofequations from "../components/Root-of-Equations";
 import LinearAlgebra from "../components/Linear-Algebra";
+import Interpolation from "@/components/Interpolation";
 
 function Main() {
   const [Head, setHead] = React.useState(" ");
@@ -59,10 +60,17 @@ function Main() {
             >
               Linear Algebra
             </Button>
-            {/* <Button colorScheme="teal" variant="ghost" borderRadius={15}>
-              -
+            <Button
+              colorScheme="cyan"
+              variant="ghost"
+              borderRadius={15}
+              value="Interpolation"
+              isActive={Head === "Interpolation"}
+              onClick={(e) => setHead((e.target as HTMLButtonElement).value)}
+            >
+              Interpolation
             </Button>
-            <Button colorScheme="teal" variant="ghost" borderRadius={15}>
+            {/* <Button colorScheme="cyan" variant="ghost" borderRadius={15}>
               -
             </Button> */}
           </ButtonGroup>
@@ -71,6 +79,7 @@ function Main() {
       <Box textAlign="center" fontSize="xl" padding={5} position="relative">
         {Head === "Rootofequations" && <Rootofequations />}
         {Head === "LinearAlgebra" && <LinearAlgebra />}
+        {Head === "Interpolation" && <Interpolation />}
         {Head === " " && (
           <Card m={20}>
             <CardHeader>

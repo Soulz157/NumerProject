@@ -1,71 +1,38 @@
 import React from "react";
 import {
   Box,
-  Text,
   Container,
-  NumberIncrementStepper,
+  Text,
   NumberInput,
   NumberInputField,
-  NumberDecrementStepper,
   NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Stack,
   Button,
+  Input,
   useDisclosure,
   AlertDialog,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
-  Input,
-  Stack,
+  HStack,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 
-function GaussJordan() {
+function Conjugate() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
-  const [size, setSize] = React.useState(0);
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
+  const [size, setSize] = React.useState(0);
   const [constants, setConstants] = React.useState<number[]>([]);
+  const [Xstart, setXstart] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
+
   const B = [matrix];
-
-  const calGaussJordan = (size: number, a: number[][], b: number[]) => {
-    const X: number[] = [];
-    const n = size;
-    const A = a.map((row) => [...row]);
-    const B = [...b];
-
-    for (let i = 0; i < n; i++) {
-      const divisor = A[i][i];
-      for (let j = i; j < n; j++) {
-        A[i][j] /= divisor;
-      }
-      B[i] /= divisor;
-      for (let k = i; k < n; k++) {
-        if (k === i) continue;
-        const ratio = A[k][i];
-        for (let j = i; j < n; j++) {
-          A[k][j] -= ratio * A[i][j];
-        }
-        B[k] -= ratio * B[i];
-      }
-
-      // console.log(A);
-      // console.log(B);
-    }
-
-    for (let i = 0; i < n; i++) {
-      X[i] = B[i];
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        X[i] -= A[i][j] * B[j];
-      }
-    }
-
-    setResult(X.map((num) => parseFloat(num.toFixed(6))));
-  };
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber >= 8) {
@@ -80,11 +47,96 @@ function GaussJordan() {
     );
     setMatrix(newMatrix);
     setResult(newMatrix[0]);
+    setXstart(newMatrix[0]);
     console.log(matrix);
   };
 
+  const calconjugate = (
+    size: number,
+    a: number[][],
+    b: number[],
+    x: number[]
+  ) => {
+    const n = size;
+    const X = [...x];
+    const A = a.map((row) => [...row]);
+    const B = [...b];
+    let R = Array(n).fill(0);
+    let D = Array(n).fill(0);
+
+    for (let i = 0; i < n; i++) {
+      R[i] = B[i];
+      for (let j = 0; j < n; j++) {
+        R[i] -= A[i][j] * X[j];
+      }
+    }
+
+    D = [...R];
+
+    let iteration = 0;
+    const Max = 100;
+    const error = 0.000001;
+    let tolence = 1;
+
+    while (iteration < Max && tolence > error) {
+      let alpha = 0;
+      let lambda = 0;
+      let Rk = 0;
+      const AD = Array(n).fill(0);
+
+      for (let i = 0; i < n; i++) {
+        Rk += R[i] * R[i];
+        for (let j = 0; j < n; j++) {
+          AD[i] += A[i][j] * D[j];
+        }
+      }
+
+      let DAD = 0;
+
+      for (let i = 0; i < n; i++) {
+        DAD += D[i] * AD[i];
+      }
+
+      lambda = DAD !== 0 ? Rk / DAD : 0;
+
+      for (let i = 0; i < n; i++) {
+        X[i] = X[i] + lambda * D[i];
+      }
+      console.log(X);
+
+      const Rnew = Array(n).fill(0);
+
+      for (let i = 0; i < n; i++) {
+        let ratio = 0;
+        for (let j = 0; j < n; j++) {
+          ratio += A[i][j] * X[j];
+        }
+        Rnew[i] = ratio - B[i];
+      }
+
+      tolence = Math.sqrt(Rnew.reduce((acc, cur) => acc + cur * cur, 0));
+
+      let RAD = 0;
+      for (let i = 0; i < n; i++) {
+        RAD += Rnew[i] * AD[i];
+      }
+
+      alpha = DAD !== 0 ? RAD / DAD : 0;
+
+      for (let i = 0; i < n; i++) {
+        D[i] = alpha * D[i] - Rnew[i];
+      }
+
+      R = [...Rnew];
+
+      iteration++;
+    }
+
+    setResult(X.map((num) => parseFloat(num.toFixed(6))));
+  };
+
   const calroot = () => {
-    calGaussJordan(size, matrix, constants);
+    calconjugate(size, matrix, constants, Xstart);
   };
 
   return (
@@ -221,6 +273,41 @@ function GaussJordan() {
                   </Stack>
                 </>
               ))}
+            <Box mt={5}>
+              {size > 0 &&
+                Xstart.map((col, i) => (
+                  <>
+                    <HStack display={"flex"} justifyContent={"center"}>
+                      <Text p={2} fontSize={"md"}>
+                        <MathJax>{"`X(Start) " + (i + 1) + " :`"} </MathJax>
+                      </Text>
+                      <NumberInput
+                        m={2}
+                        defaultValue={0}
+                        min={0}
+                        width={"max-content"}
+                        variant="filled"
+                        size="sm"
+                        _placeholder={{ opacity: 1, color: "gray.500" }}
+                        onChange={(valueAsString, valueAsNumber) => {
+                          const newMatrix = [...Xstart];
+                          newMatrix[i] = valueAsNumber;
+                          setXstart(newMatrix);
+                        }}
+                      >
+                        <NumberInputField
+                          borderColor={"gray.500"}
+                          borderRadius={5}
+                        />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    </HStack>
+                  </>
+                ))}
+            </Box>
           </Box>
         </Box>
       </Container>
@@ -279,4 +366,4 @@ function GaussJordan() {
   );
 }
 
-export default GaussJordan;
+export default Conjugate;

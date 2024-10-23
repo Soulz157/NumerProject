@@ -1,9 +1,10 @@
 import React from "react";
 import { Box, AbsoluteCenter, Text, Select } from "@chakra-ui/react";
-import Biesection from "@/components/layout/Root/Biesection";
-import Newton from "@/components/layout/Root/Newton";
 import Cramer from "@/components/layout/Linear/Cramer"; // Ensure Cramer is a valid React component
 import GaussElimination from "./layout/Linear/GaussElimination";
+import GaussJordan from "./layout/Linear/GaussJordan";
+import LUdecom from "./layout/Linear/LUdecom";
+import Conjugate from "./layout/Linear/Conjugate";
 
 function LinearPage() {
   const [solution, setSolution] = React.useState(" ");
@@ -26,15 +27,19 @@ function LinearPage() {
             <option value="Cramerrule">Cramer Rule</option>
             <option value="GaussElimination">Gauss Elimination</option>
             <option value="GaussJordan">Gauss Jordan</option>
-            <option value="Onepoint-iteration">Onepoint-iteration</option>
-            <option value="NewtonRapshon">Newton-Rapshon</option>
+            <option value="MatrixInverse">Matrix Inversion</option>
+            <option value="Lu">LU Decomposition</option>
+            <option value="Con">Conjugate Gradient</option>
           </Select>
         </AbsoluteCenter>
       </Box>
       <Box mt={5}>
         {solution === "Cramerrule" && <Cramer />}
         {solution === "GaussElimination" && <GaussElimination />}
-        {solution === "NewtonRapshon" && <Newton />}
+        {solution === "GaussJordan" && <GaussJordan />}
+        {solution === "MatrixInverse" && <GaussElimination />}
+        {solution === "Lu" && <LUdecom />}
+        {solution === "Con" && <Conjugate />}
       </Box>
     </>
   );

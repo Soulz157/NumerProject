@@ -1,27 +1,28 @@
 import React from "react";
 import {
   Box,
-  Text,
   Container,
-  NumberIncrementStepper,
   NumberInput,
-  NumberInputField,
   NumberDecrementStepper,
+  NumberInputField,
+  NumberIncrementStepper,
   NumberInputStepper,
+  Stack,
   Button,
+  Input,
+  Text,
   useDisclosure,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
+  AlertDialogOverlay,
   AlertDialogHeader,
   AlertDialogContent,
-  AlertDialogOverlay,
-  Input,
-  Stack,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { inv, multiply } from "mathjs";
 
-function GaussJordan() {
+function MatrixInverse() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
@@ -31,45 +32,16 @@ function GaussJordan() {
   const [result, setResult] = React.useState<number[]>([]);
   const B = [matrix];
 
-  const calGaussJordan = (size: number, a: number[][], b: number[]) => {
-    const X: number[] = [];
-    const n = size;
+  const calmatrixinverse = (size: number, a: number[][], b: number[]) => {
     const A = a.map((row) => [...row]);
     const B = [...b];
-
-    for (let i = 0; i < n; i++) {
-      const divisor = A[i][i];
-      for (let j = i; j < n; j++) {
-        A[i][j] /= divisor;
-      }
-      B[i] /= divisor;
-      for (let k = i; k < n; k++) {
-        if (k === i) continue;
-        const ratio = A[k][i];
-        for (let j = i; j < n; j++) {
-          A[k][j] -= ratio * A[i][j];
-        }
-        B[k] -= ratio * B[i];
-      }
-
-      // console.log(A);
-      // console.log(B);
-    }
-
-    for (let i = 0; i < n; i++) {
-      X[i] = B[i];
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        X[i] -= A[i][j] * B[j];
-      }
-    }
-
-    setResult(X.map((num) => parseFloat(num.toFixed(6))));
+    const Ainv = inv(A);
+    const X = multiply(Ainv, B);
+    setResult(X);
   };
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber >= 8) {
-      onOpen();
       return;
     }
 
@@ -84,7 +56,7 @@ function GaussJordan() {
   };
 
   const calroot = () => {
-    calGaussJordan(size, matrix, constants);
+    calmatrixinverse(size, matrix, constants);
   };
 
   return (
@@ -279,4 +251,4 @@ function GaussJordan() {
   );
 }
 
-export default GaussJordan;
+export default MatrixInverse;

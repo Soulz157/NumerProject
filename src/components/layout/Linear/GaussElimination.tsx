@@ -29,23 +29,58 @@ function GaussElimination() {
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
   const [constants, setConstants] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
-  const [row, setRow] = React.useState(0);
-  const [col, setCol] = React.useState(0);
   const B = [matrix];
 
-  const calGauss = (size: number, A: number[][], B: number[]) => {
+  const calGauss = (size: number, a: number[][], b: number[]) => {
     const X: number[] = [];
+    const n = size;
+    const A = a.map((row) => [...row]);
+    const B = [...b];
+
+    //Forward Elimination
+    for (let i = 0; i < n; i++) {
+      const divisor = A[i][i];
+      for (let j = i; j < n; j++) {
+        A[i][j] /= divisor;
+      }
+      B[i] /= divisor;
+
+      for (let k = i + 1; k < n; k++) {
+        const ratio = A[k][i];
+        for (let j = i; j < n; j++) {
+          A[k][j] -= ratio * A[i][j];
+        }
+        B[k] -= ratio * B[i];
+      }
+      // console.log(A);
+      // console.log(B);
+    }
+
+    //Backward Substitution
+    for (let i = n - 1; i >= 0; i--) {
+      X[i] = B[i];
+      console.log(X);
+      for (let j = i + 1; j < n; j++) {
+        X[i] -= A[i][j] * X[j];
+      }
+    }
+    // console.log(X);
+    setResult(X.map((num) => parseFloat(num.toFixed(6))));
   };
 
   const Showmatrix = (valueAsNumber: number) => {
+    if (valueAsNumber >= 8) {
+      return;
+    }
+
     setSize(valueAsNumber);
+
     const newMatrix = Array.from({ length: valueAsNumber }, () =>
       Array(valueAsNumber).fill(0)
     );
+
     setMatrix(newMatrix);
     setResult(newMatrix[0]);
-    setRow(size);
-    setCol(size);
     console.log(matrix);
   };
 
