@@ -25,7 +25,6 @@ import {
 } from "@chakra-ui/react";
 import { evaluate, derivative } from "mathjs";
 import { MathJax } from "better-react-mathjax";
-import { on } from "stream";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -84,20 +83,20 @@ function Newton() {
       }
 
       const xnew = xm - fxm / fxmprime;
-
-      ea = error(xm, xnew);
-      xm = xnew;
-      i++;
       obj.push({
         iteration: i,
-        xl: xintial,
-        xm: xm,
+        xl: xm,
+        xm: xnew,
       });
 
       graphdata.push({
         x: xm,
         y: fxm,
       });
+
+      ea = error(xm, xnew);
+      xm = xnew;
+      i++;
     } while (ea > e && i < MAX);
 
     if (xm !== undefined) {
@@ -119,6 +118,12 @@ function Newton() {
         marker: { color: "red" },
         line: { color: "blue", shape: "spline" },
       },
+      // {
+      //   x: datachart.map((d) => d.x),
+      //   y: datachart.map((d) => d.y),
+      //   mode: "lines",
+      //   line: { color: "green", shape: "spline" },
+      // },
     ],
 
     layout: {
@@ -226,7 +231,7 @@ function Newton() {
             </Box>
             <Box>
               <Text fontSize="xl" fontWeight="bold" color="white">
-                <MathJax>{"`X(Intiial)`"}</MathJax>
+                <MathJax>{"`X(Initial)`"}</MathJax>
               </Text>
               <Box padding={2}>
                 <Input

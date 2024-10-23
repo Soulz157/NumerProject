@@ -2,8 +2,8 @@ import React from "react";
 import { Box, AbsoluteCenter, Text, Select } from "@chakra-ui/react";
 import Biesection from "@/components/layout/Root/Biesection";
 import Newton from "@/components/layout/Root/Newton";
-import Cramer from "@/components/layout/Linear/Cramer";
-import GaussElimination from "./Linear/GaussElimination";
+import Cramer from "@/components/layout/Linear/Cramer"; // Ensure Cramer is a valid React component
+import GaussElimination from "./layout/Linear/GaussElimination";
 
 function LinearPage() {
   const [solution, setSolution] = React.useState(" ");

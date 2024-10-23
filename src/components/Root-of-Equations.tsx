@@ -1,10 +1,10 @@
 import * as React from "react";
 import { Box, Text, AbsoluteCenter, Select } from "@chakra-ui/react";
-import Graphical from "./Root/Graphical";
-import Biesection from "./Root/Biesection";
-import FalsePosition from "./Root/FalsePosition";
+import Graphical from "./layout/Root/Graphical";
+import Biesection from "./layout/Root/Biesection";
+import FalsePosition from "./layout/Root/FalsePosition";
 import Onepoint from "@/components/layout/Root/Onepoint";
-import Newton from "./Root/Newton";
+import Newton from "./layout/Root/Newton";
 import Secant from "@/components/layout/Root/Secant";
 
 function RootPage() {

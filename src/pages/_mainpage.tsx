@@ -13,8 +13,8 @@ import {
   CardBody,
 } from "@chakra-ui/react";
 import theme from "./theme";
-import Rootofequations from "../components/layout/Root-of-Equations";
-import LinearAlgebra from "../components/layout/Linear-Algebra";
+import Rootofequations from "../components/Root-of-Equations";
+import LinearAlgebra from "../components/Linear-Algebra";
 
 function Main() {
   const [Head, setHead] = React.useState(" ");
@@ -68,9 +68,11 @@ function Main() {
           </ButtonGroup>
         </Box>
       </Box>
-      <Box textAlign="center" fontSize="xl" padding={20} position="relative">
+      <Box textAlign="center" fontSize="xl" padding={5} position="relative">
+        {Head === "Rootofequations" && <Rootofequations />}
+        {Head === "LinearAlgebra" && <LinearAlgebra />}
         {Head === " " && (
-          <Card>
+          <Card m={20}>
             <CardHeader>
               <Heading size="md">Client Report</Heading>
             </CardHeader>
@@ -105,8 +107,6 @@ function Main() {
             </CardBody>
           </Card>
         )}
-        {Head === "Rootofequations" && <Rootofequations />}
-        {Head === "LinearAlgebra" && <LinearAlgebra />}
       </Box>
     </ChakraProvider>
   );

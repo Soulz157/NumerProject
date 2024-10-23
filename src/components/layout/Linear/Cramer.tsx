@@ -11,11 +11,22 @@ import {
   NumberDecrementStepper,
   Button,
   Stack,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
-import { det } from "mathjs";
+import { det, string } from "mathjs";
+import { on } from "events";
 
 function Cramer() {
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
+
   const [size, setSize] = React.useState(0);
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
   const [constants, setConstants] = React.useState<number[]>([]);
@@ -23,8 +34,20 @@ function Cramer() {
   const [row, setRow] = React.useState(0);
   const [col, setCol] = React.useState(0);
   const B = [matrix];
+  const [mathExpression, setmathExpression] = React.useState([
+    {
+      i: " ",
+      part: " ",
+      divide: " ",
+      result: " ",
+    },
+  ]);
 
   const Showmatrix = (valueAsNumber: number) => {
+    if (valueAsNumber >= 8) {
+      return;
+    }
+
     setSize(valueAsNumber);
 
     const newMatrix = Array.from({ length: valueAsNumber }, () =>
@@ -41,23 +64,38 @@ function Cramer() {
     const detA = det(A);
     const detX: number[] = [];
     const X: number[] = [];
+    const text = [];
 
     for (let i = 0; i < size; i++) {
       const newMatrix = A.map((row) => [...row]);
       for (let j = 0; j < size; j++) {
         newMatrix[j][i] = B[j];
       }
+
       detX.push(det(newMatrix));
       X.push(detX[i] / detA);
+
+      const DetAi_text = `${newMatrix.toString()}`;
+      const DetA = `${A.toString()}`;
+
+      text.push({
+        i: `X ${(i + 1).toString()}`,
+        part: "{" + DetAi_text + "}",
+        divide: "`{`" + `${detA.toString()}` + "`}`",
+        result: X[i].toString(),
+      });
     }
 
     setResult(X);
+    setmathExpression(text);
     console.log(X);
+    console.log(text);
   };
 
   const calroot = () => {
     calcramer(size, matrix, constants);
   };
+
   return (
     <>
       <Container maxW="2xl" centerContent mt={30}>
@@ -94,11 +132,7 @@ function Cramer() {
             {size > 0 &&
               matrix.map((row, i) => (
                 <>
-                  <Stack
-                    direction={["column", "row"]}
-                    spacing="5px"
-                    // bg={"whiteAlpha.300"}
-                  >
+                  <Stack direction={["column", "row"]} spacing="5px">
                     {row.map((col, j) => (
                       <>
                         <Box key={i} p={1}>
@@ -216,8 +250,23 @@ function Cramer() {
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box bg={"white"} w={800} h={500} color={"black"}>
+          <MathJax>
+            {mathExpression.length > 1 &&
+              mathExpression.map((r, index) => (
+                <Box key={index}>
+                  <MathJax>
+                    {"`" +
+                      r.i +
+                      "`=`" +
+                      `\\frac{${r.part}{${r.divide}}{6}` +
+                      "`=`" +
+                      r.result +
+                      "```"}
+                  </MathJax>
+                </Box>
+              ))}
+          </MathJax>
         </Box>
       </Container>
     </>
