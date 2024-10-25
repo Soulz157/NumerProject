@@ -1,10 +1,9 @@
 import React from "react";
 import { Box, Select, Text, AbsoluteCenter } from "@chakra-ui/react";
-import Newton from "./layout/Interpolation/Newton";
-import Lagrange from "./layout/Interpolation/Lagrange";
-import Spline from "./layout/Interpolation/Spline";
+import Regression from "./layout/Exterpolation/Regression";
+import MultipleRe from "./layout/Exterpolation/MultipleRe";
 
-function Interpolation() {
+function Exterpolation() {
   const [solution, setSolution] = React.useState(" ");
 
   return (
@@ -22,17 +21,16 @@ function Interpolation() {
             borderColor="gray.500"
             variant={"filled"}
           >
-            <option value="Newton">Newton&apos;s Divided Difference</option>
-            <option value="Langrange">Lagrange Interpolation</option>
-            <option value="Spline">SPLINE Interpolation</option>
+            <option value="Linear">Linear Regression</option>
+            <option value="Multiple">Multiple Linear Regression</option>
           </Select>
         </AbsoluteCenter>
       </Box>
-      <Box mt={5}>{solution === "Newton" && <Newton />}</Box>
-      <Box mt={5}>{solution === "Langrange" && <Lagrange />}</Box>
-      <Box mt={5}>{solution === "Spline" && <Spline />}</Box>
+
+      <Box mt={5}>{solution === "Linear" && <Regression />}</Box>
+      <Box mt={5}>{solution === "Multiple" && <MultipleRe />}</Box>
     </>
   );
 }
 
-export default Interpolation;
+export default Exterpolation;

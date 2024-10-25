@@ -1,33 +1,33 @@
 import React from "react";
 import {
-  Box,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
   Button,
+  Text,
+  Box,
   Container,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  useDisclosure,
-  AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogBody,
-  AlertDialogFooter,
-  Text,
   HStack,
   Input,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 
-function Newton() {
+function Spline() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const [size, setSize] = React.useState(0);
   const [X, setX] = React.useState<number[]>([]);
-  const [fx, setFx] = React.useState<number[]>([]);
+  const [Fx, setFx] = React.useState<number[]>([]);
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState(0);
 
@@ -44,49 +44,34 @@ function Newton() {
 
     setX(newMatrix[0]);
     setFx(newMatrix[0]);
-    console.log(X);
   };
 
-  const recursivenewton = (Xvalue: number[], Fx: number[]) => {
-    const n = Xvalue.length;
-    const table = [...Array(n)].map(() => Array(n).fill(0));
+  //   cosnt recursiveslope = (X: number[], Fx: number[]) => {
+  //       const slope = Array.from({ length: size }, () => Array(size).fill(0));
+  //       const x = [...X];
+  //     const fx = [...Fx];
 
-    for (let i = 0; i < n; i++) {
-      table[i][0] = Fx[i];
-    }
+  //     }
 
-    for (let j = 1; j < n; j++) {
-      for (let i = 0; i < n - j; i++) {
-        table[i][j] =
-          (table[i + 1][j - 1] - table[i][j - 1]) / (Xvalue[i + j] - Xvalue[i]);
+  const calspline = () => {
+    const x = [...X];
+    const fx = [...Fx];
+
+    for (let i = 0; i < size - 1; i++) {
+      if (Xinput >= x[i] && Xinput <= x[i + 1]) {
+        const m = (fx[i + 1] - fx[i]) / (x[i + 1] - x[i]);
+        const result = fx[i] + m * (Xinput - x[i]);
+        setResult(result);
+        break;
       }
     }
-
-    return table[0];
-  };
-
-  const calNewton = () => {
-    const Xcal = [...X];
-    const Fxcal = [...fx];
-
-    const confficients = recursivenewton(Xcal, Fxcal);
-
-    let result = confficients[0];
-    let temp = 1;
-
-    for (let i = 1; i < confficients.length; i++) {
-      temp = temp * (Xinput - Xcal[i - 1]);
-      result += confficients[i] * temp;
-    }
-
-    setResult(result);
   };
 
   const calroot = () => {
     if (size < 2) {
       onOpen();
     }
-    calNewton();
+    calspline();
   };
 
   return (
@@ -206,7 +191,7 @@ function Newton() {
                   defaultValue="0"
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {
-                    const newMatrix = [...fx];
+                    const newMatrix = [...Fx];
                     newMatrix[j] = valueAsNumber;
                     setFx(newMatrix);
                   }}
@@ -260,4 +245,4 @@ function Newton() {
   );
 }
 
-export default Newton;
+export default Spline;

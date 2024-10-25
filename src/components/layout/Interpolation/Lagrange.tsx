@@ -10,24 +10,24 @@ import {
   NumberDecrementStepper,
   useDisclosure,
   AlertDialog,
-  AlertDialogOverlay,
-  AlertDialogContent,
-  AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
-  Text,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
   HStack,
   Input,
+  Text,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 
-function Newton() {
+function Lagrange() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const [size, setSize] = React.useState(0);
   const [X, setX] = React.useState<number[]>([]);
-  const [fx, setFx] = React.useState<number[]>([]);
+  const [Fx, setFx] = React.useState<number[]>([]);
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState(0);
 
@@ -35,7 +35,6 @@ function Newton() {
     if (valueAsNumber > 20) {
       return;
     }
-
     setSize(valueAsNumber);
 
     const newMatrix = Array.from({ length: valueAsNumber }, () =>
@@ -43,40 +42,24 @@ function Newton() {
     );
 
     setX(newMatrix[0]);
-    setFx(newMatrix[0]);
     console.log(X);
   };
 
-  const recursivenewton = (Xvalue: number[], Fx: number[]) => {
-    const n = Xvalue.length;
-    const table = [...Array(n)].map(() => Array(n).fill(0));
+  const callagrange = () => {
+    const n = size;
+    const x = [...X];
+    const fx = [...Fx];
+
+    let result = 0;
 
     for (let i = 0; i < n; i++) {
-      table[i][0] = Fx[i];
-    }
-
-    for (let j = 1; j < n; j++) {
-      for (let i = 0; i < n - j; i++) {
-        table[i][j] =
-          (table[i + 1][j - 1] - table[i][j - 1]) / (Xvalue[i + j] - Xvalue[i]);
+      let temp = fx[i];
+      for (let j = 0; j < n; j++) {
+        if (i !== j) {
+          temp *= (Xinput - x[j]) / (x[i] - x[j]);
+        }
       }
-    }
-
-    return table[0];
-  };
-
-  const calNewton = () => {
-    const Xcal = [...X];
-    const Fxcal = [...fx];
-
-    const confficients = recursivenewton(Xcal, Fxcal);
-
-    let result = confficients[0];
-    let temp = 1;
-
-    for (let i = 1; i < confficients.length; i++) {
-      temp = temp * (Xinput - Xcal[i - 1]);
-      result += confficients[i] * temp;
+      result += temp;
     }
 
     setResult(result);
@@ -86,9 +69,8 @@ function Newton() {
     if (size < 2) {
       onOpen();
     }
-    calNewton();
+    callagrange();
   };
-
   return (
     <>
       {
@@ -206,7 +188,7 @@ function Newton() {
                   defaultValue="0"
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {
-                    const newMatrix = [...fx];
+                    const newMatrix = [...Fx];
                     newMatrix[j] = valueAsNumber;
                     setFx(newMatrix);
                   }}
@@ -260,4 +242,4 @@ function Newton() {
   );
 }
 
-export default Newton;
+export default Lagrange;

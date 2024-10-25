@@ -16,6 +16,8 @@ import theme from "./theme";
 import Rootofequations from "../components/Root-of-Equations";
 import LinearAlgebra from "../components/Linear-Algebra";
 import Interpolation from "@/components/Interpolation";
+import Exterpolation from "@/components/Exterpolation";
+import Intergration from "@/components/Intergration";
 
 function Main() {
   const [Head, setHead] = React.useState(" ");
@@ -70,9 +72,36 @@ function Main() {
             >
               Interpolation
             </Button>
-            {/* <Button colorScheme="cyan" variant="ghost" borderRadius={15}>
-              -
-            </Button> */}
+            <Button
+              colorScheme="cyan"
+              variant="ghost"
+              borderRadius={15}
+              value="Exterpolation"
+              isActive={Head === "Exterpolation"}
+              onClick={(e) => setHead((e.target as HTMLButtonElement).value)}
+            >
+              Exterpolation
+            </Button>
+            <Button
+              colorScheme="cyan"
+              variant="ghost"
+              borderRadius={15}
+              value="Integration"
+              isActive={Head === "Integration"}
+              onClick={(e) => setHead((e.target as HTMLButtonElement).value)}
+            >
+              Integration
+            </Button>
+            <Button
+              colorScheme="cyan"
+              variant="ghost"
+              borderRadius={15}
+              value="Differentiation"
+              isActive={Head === "Differentiation"}
+              onClick={(e) => setHead((e.target as HTMLButtonElement).value)}
+            >
+              Differentiation
+            </Button>
           </ButtonGroup>
         </Box>
       </Box>
@@ -80,6 +109,8 @@ function Main() {
         {Head === "Rootofequations" && <Rootofequations />}
         {Head === "LinearAlgebra" && <LinearAlgebra />}
         {Head === "Interpolation" && <Interpolation />}
+        {Head === "Exterpolation" && <Exterpolation />}
+        {Head === "Integration" && <Intergration />}
         {Head === " " && (
           <Card m={20}>
             <CardHeader>

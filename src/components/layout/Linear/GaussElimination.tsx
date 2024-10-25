@@ -85,6 +85,9 @@ function GaussElimination() {
   };
 
   const calroot = () => {
+    if (size > 7) {
+      onOpen();
+    }
     calGauss(size, matrix, constants);
   };
   return (
