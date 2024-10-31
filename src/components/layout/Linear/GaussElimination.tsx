@@ -20,6 +20,8 @@ import {
   AlertDialogOverlay,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function GaussElimination() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -30,42 +32,80 @@ function GaussElimination() {
   const [constants, setConstants] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
   const B = [matrix];
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+
+  const matrixLatex = (A: number[][], B: number[]) => {
+    let text = `\\begin{bmatrix}`;
+
+    for (let i = 0; i < A[0].length; i++) {
+      text += A[i].join(" & ") + " & " + B[i] + " \\\\ ";
+    }
+    text += `\\end{bmatrix}`;
+    return text;
+  };
 
   const calGauss = (size: number, a: number[][], b: number[]) => {
     const X: number[] = [];
     const n = size;
     const A = a.map((row) => [...row]);
     const B = [...b];
+    const text: string[] = [];
+
+    text.push(`\\text{Matrix A :} \\quad ` + matrixLatex(A, B));
 
     //Forward Elimination
     for (let i = 0; i < n; i++) {
       const divisor = A[i][i];
+      text.push(
+        `\\text{Give row } ${i + 1}: \\quad \\frac{\\text{Row }${
+          i + 1
+        }}{${divisor}}`
+      );
       for (let j = i; j < n; j++) {
         A[i][j] /= divisor;
       }
       B[i] /= divisor;
 
+      text.push(matrixLatex(A, B));
+
       for (let k = i + 1; k < n; k++) {
         const ratio = A[k][i];
+        text.push(
+          `\\text{Eliminate row} ${k + 1}: \\quad \\text{Row }${
+            k + 1
+          } - (${ratio}) \\times \\text{Row }${i + 1} `
+        );
         for (let j = i; j < n; j++) {
           A[k][j] -= ratio * A[i][j];
         }
         B[k] -= ratio * B[i];
+        text.push(matrixLatex(A, B));
       }
       // console.log(A);
       // console.log(B);
     }
 
+    text.push(`\\text{After Forward Elimination:} \\quad ` + matrixLatex(A, B));
+
     //Backward Substitution
     for (let i = n - 1; i >= 0; i--) {
       X[i] = B[i];
-      console.log(X);
+      // console.log(X);
       for (let j = i + 1; j < n; j++) {
         X[i] -= A[i][j] * X[j];
       }
+      text.push(
+        `X_{${i + 1}} = ${B[i].toFixed(2)} - ${A[i]
+          .slice(i + 1)
+          .map((val, idx) => `(${val.toFixed(2)} \\times X_{${i + idx + 2}})`)
+          .join(" - ")} = ${X[i].toFixed(2)}`
+      );
     }
+
     // console.log(X);
     setResult(X.map((num) => parseFloat(num.toFixed(6))));
+    setmathExpression(Array.from(new Set(text)));
+    console.log(mathExpression);
   };
 
   const Showmatrix = (valueAsNumber: number) => {
@@ -274,8 +314,12 @@ function GaussElimination() {
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

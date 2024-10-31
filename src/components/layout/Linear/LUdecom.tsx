@@ -20,6 +20,8 @@ import {
   AlertDialogFooter,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function LUdecom() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -30,11 +32,31 @@ function LUdecom() {
   const [constants, setConstants] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
   const B = [matrix];
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+
+  const matrixlatex = (matrix: number[][]) => {
+    if (Array.isArray(matrix[0])) {
+      let latex = "\\begin{bmatrix} ";
+      for (let i = 0; i < matrix.length; i++) {
+        latex += matrix[i].join(" & ") + " \\\\ ";
+      }
+      latex += "\\end{bmatrix}";
+      return latex;
+    } else {
+      let latex = "\\begin{bmatrix} ";
+      for (let i = 0; i < matrix.length; i++) {
+        latex += matrix[i] + " \\\\ ";
+      }
+      latex += "\\end{bmatrix}";
+      return latex;
+    }
+  };
 
   const calLU = (size: number, a: number[][], b: number[]) => {
     const n = size;
     const A = a.map((row) => [...row]);
     const B = [...b];
+    let text: string[] = [];
 
     const L = Array.from({ length: n }, () => Array(n).fill(0));
     const U = Array.from({ length: n }, () => Array(n).fill(0));
@@ -68,6 +90,14 @@ function LUdecom() {
       //   console.log(U);
     }
 
+    const Ltext = `\\text {L :} \\quad ${matrixlatex(L as number[][])}`;
+    const Utext = `\\text {U :} \\quad ${matrixlatex(U as number[][])}`;
+    const Atext = `\\text {A :} \\quad ${matrixlatex(L as number[][])}`;
+    const Btext = `\\text {B :} \\quad ${matrixlatex(L as number[][])}`;
+
+    const equation = `A = L \\cdot U \\quad ${Ltext} \\cdot ${Utext}`;
+    text = [equation];
+
     //L * Y = B
     for (let i = 0; i < n; i++) {
       Y[i] = B[i];
@@ -85,8 +115,45 @@ function LUdecom() {
       }
       //   console.log(X);
     }
+    const showtext = `\\text{[L][U] = [A]}`;
+    text.push(showtext);
+    const Lt1 = matrixlatex(L as number[][]);
+    const Ut1 = matrixlatex(U as number[][]);
+    const equation1 = `  ${Lt1} \\cdot ${Ut1} = ${Atext} `;
+    text.push(equation1);
+
+    const showtext2 = `\\text{[L][Y] = [B]}`;
+    text.push(showtext2);
+
+    const equation2 = `  ${Lt1} \\cdot \\begin{bmatrix} ${Y.map(
+      (y, index) => `y_{${index + 1}}`
+    ).join(" \\\\ ")} \\end{bmatrix} = ${Btext} `;
+    text.push(equation2);
+
+    const equation3 = `  ${Ut1} \\cdot \\begin{bmatrix} ${Y.map(
+      (y, index) => `y_{${index + 1}}`
+    ).join(" \\\\ ")} \\end{bmatrix} = \\begin{bmatrix} ${Y.map((y) =>
+      y.toFixed(4)
+    ).join(" \\\\ ")} \\end{bmatrix} `;
+    text.push(equation3);
+
+    const showtext3 = `\\text{[U][X] = [Y]}`;
+    text.push(showtext3);
+
+    const equation4 = `  ${Ut1} \\cdot \\begin{bmatrix} ${X.map(
+      (x, index) => `x_{${index + 1}}`
+    ).join(" \\\\ ")} \\end{bmatrix} = \\begin{bmatrix} ${Y.map((y) =>
+      y.toFixed(4)
+    ).join(" \\\\ ")} \\end{bmatrix} `;
+    text.push(equation4);
+
+    const solution = `\\begin{bmatrix} ${X.map((x) => x.toFixed(0)).join(
+      " \\\\ "
+    )} \\end{bmatrix}`;
+    text.push(solution);
 
     setResult(X.map((num) => parseFloat(num.toFixed(6))));
+    setmathExpression(text);
   };
 
   const Showmatrix = (valueAsNumber: number) => {
@@ -105,6 +172,9 @@ function LUdecom() {
   };
 
   const calroot = () => {
+    if (size == 0) {
+      onOpen();
+    }
     calLU(size, matrix, constants);
   };
   return (
@@ -291,8 +361,12 @@ function LUdecom() {
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box color={"white"} mt={2} w={800}>
+          {mathExpression.map((exp, i) => (
+            <Box key={i} p={2}>
+              <BlockMath math={exp} />
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

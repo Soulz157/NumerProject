@@ -19,8 +19,17 @@ import {
   AlertDialogBody,
   AlertDialogFooter,
   HStack,
+  TableContainer,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Table,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function Conjugate() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -31,7 +40,17 @@ function Conjugate() {
   const [constants, setConstants] = React.useState<number[]>([]);
   const [Xstart, setXstart] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
-
+  const [mathExpression, setmathExpression] = React.useState<
+    {
+      iteration: number;
+      X: number[];
+      R: number[];
+      D: number[];
+      alpha: number;
+      lambda: number;
+      tolence: number;
+    }[]
+  >([]);
   const B = [matrix];
 
   const Showmatrix = (valueAsNumber: number) => {
@@ -63,6 +82,7 @@ function Conjugate() {
     const B = [...b];
     let R = Array(n).fill(0);
     let D = Array(n).fill(0);
+    const text = [];
 
     for (let i = 0; i < n; i++) {
       R[i] = B[i];
@@ -130,9 +150,19 @@ function Conjugate() {
       R = [...Rnew];
 
       iteration++;
+      text.push({
+        iteration: iteration,
+        X: X.map((num) => parseFloat(num.toFixed(6))),
+        R: R.map((num) => parseFloat(num.toFixed(6))),
+        D: D.map((num) => parseFloat(num.toFixed(6))),
+        alpha: parseFloat(alpha.toFixed(6)),
+        lambda: parseFloat(lambda.toFixed(6)),
+        tolence: parseFloat(tolence.toFixed(6)),
+      });
     }
 
     setResult(X.map((num) => parseFloat(num.toFixed(6))));
+    setmathExpression(text);
   };
 
   const calroot = () => {
@@ -358,8 +388,55 @@ function Conjugate() {
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.length > 0 && (
+            <TableContainer>
+              <Table variant="simple" size={"sm"}>
+                <Thead>
+                  <Tr>
+                    <Th w={150}>Iteration</Th>
+                    <Th>Alpha (α)</Th>
+                    <Th>Lamda (λ)</Th>
+                    <Th>D</Th>
+                    <Th>X</Th>
+                    <Th>Residual (R)</Th>
+                    <Th>Error</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {mathExpression.map((text, index) => (
+                    <Tr key={index}>
+                      <Td>{text.iteration}</Td>
+                      <Td>{text.alpha}</Td>
+                      <Td>{text.lambda}</Td>
+                      <Td>
+                        <BlockMath
+                          math={`D = \\begin{bmatrix} ${text.D.map(
+                            (val) => ` ${val.toFixed(2)}`
+                          ).join("\\\\")} \\end{bmatrix}`}
+                        />
+                      </Td>
+                      <Td>
+                        <BlockMath
+                          math={`X = \\begin{bmatrix} ${text.X.map(
+                            (val) => ` ${val.toFixed(2)}`
+                          ).join("\\\\")} \\end{bmatrix}`}
+                        />
+                      </Td>
+                      <Td>
+                        <BlockMath
+                          math={`R = \\begin{bmatrix} ${text.R.map(
+                            (val) => `${val.toFixed(2)}`
+                          ).join("\\\\")} \\end{bmatrix}`}
+                        />
+                      </Td>
+                      <Td>{text.tolence}</Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          )}
         </Box>
       </Container>
     </>

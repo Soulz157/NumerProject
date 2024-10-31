@@ -18,6 +18,7 @@ import {
   HStack,
   Input,
   Text,
+  Checkbox,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 
@@ -30,6 +31,7 @@ function Lagrange() {
   const [Fx, setFx] = React.useState<number[]>([]);
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState(0);
+  const [selectpoint, setSelectpoint] = React.useState<boolean[]>([false]);
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
@@ -49,14 +51,24 @@ function Lagrange() {
     const n = size;
     const x = [...X];
     const fx = [...Fx];
+    const select = selectpoint
+      .map((value, index) => (value ? index : null))
+      .filter((value) => value !== null);
+
+    if (select.length < 2) {
+      onOpen();
+      return;
+    }
+    const Xselect = select.map((value) => x[value]);
+    const fxselect = select.map((value) => fx[value]);
 
     let result = 0;
 
     for (let i = 0; i < n; i++) {
-      let temp = fx[i];
+      let temp = fxselect[i];
       for (let j = 0; j < n; j++) {
         if (i !== j) {
-          temp *= (Xinput - x[j]) / (x[i] - x[j]);
+          temp *= (Xinput - Xselect[j]) / (Xselect[i] - Xselect[j]);
         }
       }
       result += temp;
@@ -165,9 +177,19 @@ function Lagrange() {
           {size > 0 &&
             X.map((col, j) => (
               <HStack key={j}>
+                <Checkbox
+                  key={j}
+                  size="md"
+                  colorScheme="teal"
+                  isChecked={selectpoint[j] || false}
+                  onChange={() => {
+                    const updated = [...selectpoint];
+                    updated[j] = !updated[j];
+                    setSelectpoint(updated);
+                  }}
+                ></Checkbox>
                 <MathJax>{"`X$ :`".replaceAll("$", j.toString())}</MathJax>
                 <NumberInput
-                  key={j}
                   defaultValue="0"
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {
@@ -184,7 +206,6 @@ function Lagrange() {
                 </NumberInput>
                 <MathJax>{"`F(X$) : `".replaceAll("$", j.toString())}</MathJax>
                 <NumberInput
-                  key={j}
                   defaultValue="0"
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {

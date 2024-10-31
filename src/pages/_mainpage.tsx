@@ -18,6 +18,7 @@ import LinearAlgebra from "../components/Linear-Algebra";
 import Interpolation from "@/components/Interpolation";
 import Exterpolation from "@/components/Exterpolation";
 import Intergration from "@/components/Intergration";
+import Differentiation from "@/components/Differentiation";
 
 function Main() {
   const [Head, setHead] = React.useState(" ");
@@ -111,6 +112,7 @@ function Main() {
         {Head === "Interpolation" && <Interpolation />}
         {Head === "Exterpolation" && <Exterpolation />}
         {Head === "Integration" && <Intergration />}
+        {Head === "Differentiation" && <Differentiation />}
         {Head === " " && (
           <Card m={20}>
             <CardHeader>

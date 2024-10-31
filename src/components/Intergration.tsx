@@ -1,7 +1,9 @@
 import React from "react";
 import { Box, Select, Text, AbsoluteCenter } from "@chakra-ui/react";
-import Regression from "./layout/Exterpolation/Regression";
-import MultipleRe from "./layout/Exterpolation/MultipleRe";
+import Trapezoidal from "./layout/Intergration/Trapezoidal";
+import CompositeTrap from "./layout/Intergration/CompositeTrap";
+import Simpson from "./layout/Intergration/Simpson";
+import Compositesim from "./layout/Intergration/Compositesim";
 
 function Intergration() {
   const [solution, setSolution] = React.useState(" ");
@@ -21,14 +23,18 @@ function Intergration() {
             borderColor="gray.500"
             variant={"filled"}
           >
-            <option value="Linear">Linear Regression</option>
-            <option value="Multiple">Multiple Linear Regression</option>
+            <option value="Trap">Single Trapezoidal Rule</option>
+            <option value="Compo">Composite Trapezoidal Rule</option>
+            <option value="Sim">Simpson&apos;s Rule</option>
+            <option value="Comsim">Composite Simpson&apos;s Rule</option>
           </Select>
         </AbsoluteCenter>
       </Box>
 
-      <Box mt={5}>{solution === "Linear" && <Regression />}</Box>
-      <Box mt={5}>{solution === "Multiple" && <MultipleRe />}</Box>
+      <Box mt={5}>{solution === "Trap" && <Trapezoidal />}</Box>
+      <Box mt={5}>{solution === "Compo" && <CompositeTrap />}</Box>
+      <Box mt={5}>{solution === "Sim" && <Simpson />}</Box>
+      <Box mt={5}>{solution === "Comsim" && <Compositesim />}</Box>
     </>
   );
 }

@@ -23,16 +23,26 @@ import {
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
 
-function Trapezoidal() {
+function Compositesim() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const [functionInput, setFunctionInput] = React.useState("...");
   const [Xstart, setXstart] = React.useState(0);
   const [Xend, setXend] = React.useState(0);
+  const [n, setn] = React.useState(0);
   const [result, setResult] = React.useState(0);
 
-  const calTrap = () => {
+  const Check = (x: number) => {
+    try {
+      const f = evaluate(functionInput, { x: x });
+      return f;
+    } catch {
+      onOpen();
+    }
+  };
+
+  const calsimpson = () => {
     const fx = (x: number) => {
       try {
         const f = evaluate(functionInput, { x: x });
@@ -41,23 +51,26 @@ function Trapezoidal() {
         return NaN;
       }
     };
+    const h = (Xend - Xstart) / n;
+    const area = h / 2;
+    let result = 0;
+    result += fx(Xstart) + fx(Xend);
 
-    const h = (Xend - Xstart) / 2;
-    const result = h * (fx(Xstart) + fx(Xend));
-    setResult(result);
-  };
-
-  const Checkfunc = (x: number) => {
-    try {
-      evaluate(functionInput, { x: x });
-    } catch {
-      onOpen();
+    for (let i = 1; i < n * 2 - 1; i++) {
+      if (i % 2 === 0) {
+        result += 2 * fx(Xstart + i * area);
+      } else {
+        result += 4 * fx(Xstart + i * area);
+      }
     }
+    result *= area / 3;
+
+    setResult(parseFloat(result.toFixed(6)));
   };
 
   const calroot = () => {
-    Checkfunc(Xstart);
-    calTrap();
+    Check(Xstart);
+    calsimpson();
   };
 
   return (
@@ -98,7 +111,7 @@ function Trapezoidal() {
           maxW="md"
         >
           <Box px={20}>
-            <Text mt={2} p={4}>
+            <Text mt={2} p={2}>
               <MathJax inline dynamic>
                 {"`F(x) = $`".replaceAll(
                   "$",
@@ -121,6 +134,28 @@ function Trapezoidal() {
               isInvalid
               errorBorderColor="gray.500"
             />
+          </Box>
+          <Box px={20} mt={5}>
+            <Text fontSize="lg" fontWeight="bold" color="white" p={2}>
+              <MathJax>{"`N`"}</MathJax>
+            </Text>
+            <NumberInput
+              m={2}
+              defaultValue={0}
+              variant="filled"
+              size="md"
+              _placeholder={{ opacity: 1, color: "gray.500" }}
+              onChange={(valueAsString, valueAsNumber) => {
+                setn(valueAsNumber);
+                console.log(valueAsNumber);
+              }}
+            >
+              <NumberInputField borderColor={"gray.500"} />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
           </Box>
           <HStack p={4}>
             <Stack>
@@ -224,4 +259,4 @@ function Trapezoidal() {
   );
 }
 
-export default Trapezoidal;
+export default Compositesim;

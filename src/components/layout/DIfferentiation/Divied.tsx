@@ -1,63 +1,63 @@
 import React from "react";
 import {
-  Box,
-  Text,
-  Container,
+  useDisclosure,
   AlertDialog,
   AlertDialogBody,
+  AlertDialogContent,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogContent,
   AlertDialogOverlay,
   Button,
-  useDisclosure,
+  Text,
+  Box,
+  Container,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
   HStack,
-  Stack,
   Input,
+  Select,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
+import FirstDivied from "./FirstDivied";
+import SecondDivied from "./SecondDivied";
 
-function Trapezoidal() {
+function Divied() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
+  const [select, setSelect] = React.useState("");
+  const [Direc, setDirec] = React.useState("");
+  const [Error, setError] = React.useState("");
+  const [Xinput, setXinput] = React.useState(0);
+  const [H, setH] = React.useState(0);
   const [functionInput, setFunctionInput] = React.useState("...");
-  const [Xstart, setXstart] = React.useState(0);
-  const [Xend, setXend] = React.useState(0);
   const [result, setResult] = React.useState(0);
 
-  const calTrap = () => {
-    const fx = (x: number) => {
-      try {
-        const f = evaluate(functionInput, { x: x });
-        return f;
-      } catch {
-        return NaN;
-      }
-    };
-
-    const h = (Xend - Xstart) / 2;
-    const result = h * (fx(Xstart) + fx(Xend));
-    setResult(result);
-  };
-
-  const Checkfunc = (x: number) => {
+  const Check = (x: number) => {
     try {
-      evaluate(functionInput, { x: x });
+      const f = evaluate(functionInput, { x: x });
+      return f;
     } catch {
       onOpen();
     }
   };
 
   const calroot = () => {
-    Checkfunc(Xstart);
-    calTrap();
+    Check(Xinput);
+
+    if (select === "1") {
+      const res = FirstDivied(Error, Direc, Xinput, H, [Check(0)]);
+      setResult(res !== undefined ? res : 0);
+    }
+    if (select === "2") {
+      console.log("Second Divied");
+      const res = SecondDivied(Error, Direc, Xinput, H, [Check(0)]);
+      setResult(res !== undefined ? res : 0);
+    }
   };
 
   return (
@@ -89,6 +89,7 @@ function Trapezoidal() {
           </AlertDialog>
         </>
       }
+
       <Container maxW="2xl" centerContent mt={30}>
         <Box
           padding="4"
@@ -97,8 +98,8 @@ function Trapezoidal() {
           fontSize="xl"
           maxW="md"
         >
-          <Box px={20}>
-            <Text mt={2} p={4}>
+          <Box p={2}>
+            <Text mb={5} p={2}>
               <MathJax inline dynamic>
                 {"`F(x) = $`".replaceAll(
                   "$",
@@ -106,102 +107,112 @@ function Trapezoidal() {
                 )}
               </MathJax>
             </Text>
-            <Text fontSize="lg" fontWeight="bold" color="white" p={2}>
-              <MathJax>{"`F(x)`"}</MathJax>
-            </Text>
-            <Input
-              onChange={(e) => {
-                console.log(e.target.value);
-                setFunctionInput(e.target.value);
-              }}
-              variant="filled"
-              size="md"
-              placeholder="f(x) = x^2 - 4"
-              _placeholder={{ opacity: 1, color: "gray.500" }}
-              isInvalid
-              errorBorderColor="gray.500"
-            />
+            <HStack spacing={3}>
+              <Select
+                placeholder="Order"
+                onChange={(e) => setSelect(e.target.value)}
+              >
+                <option value="1">First Divied</option>
+                <option value="2">Second Divied</option>
+              </Select>
+              <Select
+                placeholder="Directions"
+                onChange={(e) => setDirec(e.target.value)}
+              >
+                <option value="F">Forward</option>
+                <option value="B">Backward</option>
+                <option value="C">Central</option>
+              </Select>
+              <Select
+                placeholder="Error"
+                onChange={(e) => setError(e.target.value)}
+              >
+                <option value="1">O(h)</option>
+                <option value="2">O(h^2)</option>
+                <option value="3">O(h^4)</option>
+              </Select>
+            </HStack>
+            <Box mt={2} px={20}>
+              <Text fontSize="lg" fontWeight="bold" color="white" p={2}>
+                <MathJax>{"`F(x)`"}</MathJax>
+              </Text>
+              <Input
+                onChange={(e) => {
+                  console.log(e.target.value);
+                  setFunctionInput(e.target.value);
+                }}
+                variant="filled"
+                size="md"
+                placeholder="-"
+                isInvalid
+                errorBorderColor="gray.700"
+              />
+            </Box>
+            <HStack spacing={3} mt={3}>
+              <Box>
+                <Text fontSize="md" fontWeight="bold" color="white" p={2}>
+                  <MathJax>{"`X`"}</MathJax>
+                </Text>
+                <NumberInput
+                  m={2}
+                  defaultValue={0}
+                  variant="filled"
+                  size="md"
+                  onChange={(valueAsString, valueAsNumber) => {
+                    setXinput(valueAsNumber);
+                    console.log(valueAsNumber);
+                  }}
+                >
+                  <NumberInputField borderColor={"gray.700"} />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Box>
+              <Box>
+                <Text fontSize="md" fontWeight="bold" color="white" p={2}>
+                  <MathJax>{"`H`"}</MathJax>
+                </Text>
+                <NumberInput
+                  m={2}
+                  defaultValue={0}
+                  variant="filled"
+                  size="md"
+                  onChange={(valueAsString, valueAsNumber) => {
+                    setH(valueAsNumber);
+                    console.log(valueAsNumber);
+                  }}
+                >
+                  <NumberInputField borderColor={"gray.700"} />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+              </Box>
+            </HStack>
+            <Box p={2} mt={2}>
+              <Button
+                variant="outline"
+                borderColor={"gray.500"}
+                fontWeight="bold"
+                fontSize={"lg"}
+                onClick={calroot}
+              >
+                Calculate
+              </Button>
+            </Box>
           </Box>
-          <HStack p={4}>
-            <Stack>
-              <Box>
-                <Text fontSize="md" fontWeight="bold" color="white" p={2}>
-                  <MathJax>{"`X Start`"}</MathJax>
-                </Text>
-
-                <NumberInput
-                  m={2}
-                  defaultValue={0}
-                  variant="filled"
-                  size="md"
-                  _placeholder={{ opacity: 1, color: "gray.500" }}
-                  onChange={(valueAsString, valueAsNumber) => {
-                    setXstart(valueAsNumber);
-                    console.log(valueAsNumber);
-                  }}
-                >
-                  <NumberInputField borderColor={"gray.500"} />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </Box>
-            </Stack>
-            <Stack>
-              <Box>
-                <Text fontSize="md" fontWeight="bold" color="white" p={2}>
-                  <MathJax>{"`X End`"}</MathJax>
-                </Text>
-                <NumberInput
-                  m={2}
-                  defaultValue={0}
-                  variant="filled"
-                  size="md"
-                  _placeholder={{ opacity: 1, color: "gray.500" }}
-                  onChange={(valueAsString, valueAsNumber) => {
-                    setXend(valueAsNumber);
-                    console.log(valueAsNumber);
-                  }}
-                >
-                  <NumberInputField borderColor={"gray.500"} />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </Box>
-            </Stack>
-          </HStack>
         </Box>
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
-        </Box>
-        <Box p={2}></Box>
-      </Container>
-      <Container
-        maxW="2xl"
-        fontSize={"xl"}
-        borderColor={"white"}
-        fontWeight={"bold"}
-        centerContent
-        mt={5}
-      >
-        <Box p={2}>
-          <Text fontSize="xl" fontWeight="bold" color="white">
+          <Text fontSize="lg" fontWeight="bold" color="white">
             Result
           </Text>
-
           <HStack padding={2}>
-            <Text>I</Text>
+            <MathJax>
+              {"`F($)`".replaceAll("$", Xinput ? Xinput.toString() : "x")}
+            </MathJax>
             <MathJax>{"`=`"}</MathJax>
             <Input
               variant="filled"
@@ -224,4 +235,4 @@ function Trapezoidal() {
   );
 }
 
-export default Trapezoidal;
+export default Divied;

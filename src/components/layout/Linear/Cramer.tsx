@@ -70,21 +70,23 @@ function Cramer() {
       detX.push(det(newMatrix));
       X.push(detX[i] / detA);
 
-      const DetAi_text = `${newMatrix.toString()}`;
-      const DetA = `${A.toString()}`;
+      const DetAi_text = `\\text{det}A_${i + 1} = ${detX[i].toString()}`;
+      const DetA = `\\text{det}A = ${detA.toString()}`;
+      const res = `\\text = \\frac{${DetAi_text}}{${DetA}} = ${X[
+        i
+      ].toString()}`;
 
       text.push({
         i: `X ${(i + 1).toString()}`,
-        part: "{" + DetAi_text + "}",
-        divide: "`{`" + `${DetA.toString()}` + "`}`",
-        result: X[i].toString(),
+        part: DetAi_text,
+        divide: DetA,
+        result: res,
       });
     }
 
     setResult(X.map((num) => parseFloat(num.toFixed(6))));
     setmathExpression(text);
     console.log(X);
-    console.log(text);
   };
 
   const calroot = () => {
@@ -245,20 +247,12 @@ function Cramer() {
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500} color={"black"}>
+        <Box w={800} color={"white"}>
           <MathJax>
             {mathExpression.length > 1 &&
               mathExpression.map((r, index) => (
-                <Box key={index}>
-                  <MathJax>
-                    {"`" +
-                      r.i +
-                      "`=`" +
-                      `\\frac{${r.part}{${r.divide}}{6}` +
-                      "`=`" +
-                      r.result +
-                      "```"}
-                  </MathJax>
+                <Box key={index} p={3}>
+                  <MathJax>{"`" + r.i + "` = `" + r.result + "```"}</MathJax>
                 </Box>
               ))}
           </MathJax>

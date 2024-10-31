@@ -23,13 +23,14 @@ import {
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
 
-function Trapezoidal() {
+function CompositeTrap() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const [functionInput, setFunctionInput] = React.useState("...");
   const [Xstart, setXstart] = React.useState(0);
   const [Xend, setXend] = React.useState(0);
+  const [n, setn] = React.useState(0);
   const [result, setResult] = React.useState(0);
 
   const calTrap = () => {
@@ -41,10 +42,16 @@ function Trapezoidal() {
         return NaN;
       }
     };
+    let result = 0;
+    result += fx(Xstart) + fx(Xend);
 
-    const h = (Xend - Xstart) / 2;
-    const result = h * (fx(Xstart) + fx(Xend));
-    setResult(result);
+    const h = (Xend - Xstart) / n;
+    for (let i = 1; i < n; i++) {
+      result += 2 * fx(Xstart + i * h);
+    }
+
+    result *= h / 2;
+    setResult(parseFloat(result.toFixed(6)));
   };
 
   const Checkfunc = (x: number) => {
@@ -98,7 +105,7 @@ function Trapezoidal() {
           maxW="md"
         >
           <Box px={20}>
-            <Text mt={2} p={4}>
+            <Text mt={2} p={2}>
               <MathJax inline dynamic>
                 {"`F(x) = $`".replaceAll(
                   "$",
@@ -121,6 +128,28 @@ function Trapezoidal() {
               isInvalid
               errorBorderColor="gray.500"
             />
+          </Box>
+          <Box px={20} mt={5}>
+            <Text fontSize="lg" fontWeight="bold" color="white" p={2}>
+              <MathJax>{"`N`"}</MathJax>
+            </Text>
+            <NumberInput
+              m={2}
+              defaultValue={0}
+              variant="filled"
+              size="md"
+              _placeholder={{ opacity: 1, color: "gray.500" }}
+              onChange={(valueAsString, valueAsNumber) => {
+                setn(valueAsNumber);
+                console.log(valueAsNumber);
+              }}
+            >
+              <NumberInputField borderColor={"gray.500"} />
+              <NumberInputStepper>
+                <NumberIncrementStepper />
+                <NumberDecrementStepper />
+              </NumberInputStepper>
+            </NumberInput>
           </Box>
           <HStack p={4}>
             <Stack>
@@ -224,4 +253,4 @@ function Trapezoidal() {
   );
 }
 
-export default Trapezoidal;
+export default CompositeTrap;

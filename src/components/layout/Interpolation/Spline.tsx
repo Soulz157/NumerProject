@@ -46,21 +46,25 @@ function Spline() {
     setFx(newMatrix[0]);
   };
 
-  //   cosnt recursiveslope = (X: number[], Fx: number[]) => {
-  //       const slope = Array.from({ length: size }, () => Array(size).fill(0));
-  //       const x = [...X];
-  //     const fx = [...Fx];
-
-  //     }
+  const Findslope = (X: number[], Fx: number[]) => {
+    const slope = Array(size - 1).fill(0);
+    const x = [...X];
+    const fx = [...Fx];
+    for (let i = 0; i < size - 1; i++) {
+      slope[i] = (fx[i + 1] - fx[i]) / (x[i + 1] - x[i]);
+    }
+    console.log(slope);
+    return slope;
+  };
 
   const calspline = () => {
     const x = [...X];
     const fx = [...Fx];
-
+    const slope = Findslope(x, fx);
     for (let i = 0; i < size - 1; i++) {
       if (Xinput >= x[i] && Xinput <= x[i + 1]) {
-        const m = (fx[i + 1] - fx[i]) / (x[i + 1] - x[i]);
-        const result = fx[i] + m * (Xinput - x[i]);
+        // const m = (fx[i + 1] - fx[i]) / (x[i + 1] - x[i]);
+        const result = fx[i] + slope[i] * (Xinput - x[i]);
         setResult(result);
         break;
       }

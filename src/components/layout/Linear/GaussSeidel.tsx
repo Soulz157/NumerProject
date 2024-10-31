@@ -1,14 +1,17 @@
 import React from "react";
 import {
   Box,
-  Text,
+  Button,
   Container,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberDecrementStepper,
   NumberInputStepper,
-  Button,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Text,
+  HStack,
+  Input,
+  Stack,
   useDisclosure,
   AlertDialog,
   AlertDialogBody,
@@ -16,14 +19,19 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-  Input,
-  Stack,
+  TableContainer,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Table,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
 
-function GaussJordan() {
+function GaussSeidel() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
@@ -31,68 +39,68 @@ function GaussJordan() {
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
   const [constants, setConstants] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
+  const [Xstart, setXstart] = React.useState<number[]>([]);
   const B = [matrix];
-  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
-
-  const calGaussJordan = (size: number, a: number[][], b: number[]) => {
-    const X: number[] = [];
-    const n = size;
-    const A = a.map((row) => [...row]);
-    const B = [...b];
-    const text: string[] = [];
-
-    for (let i = 0; i < n; i++) {
-      const divisor = A[i][i];
-      text.push(`Divide \\quad  row ${i + 1} \\quad by  \\quad  ${divisor}`);
-      for (let j = i; j < n; j++) {
-        A[i][j] /= divisor;
-      }
-      B[i] /= divisor;
-      for (let k = i; k < n; k++) {
-        if (k === i) continue;
-        const ratio = A[k][i];
-        for (let j = i; j < n; j++) {
-          A[k][j] -= ratio * A[i][j];
-        }
-        B[k] -= ratio * B[i];
-      }
-
-      // console.log(A);
-      // console.log(B);
-    }
-
-    for (let i = 0; i < n; i++) {
-      X[i] = B[i];
-      for (let j = 0; j < n; j++) {
-        if (i === j) continue;
-        X[i] -= A[i][j] * B[j];
-      }
-    }
-
-    setResult(X.map((num) => parseFloat(num.toFixed(6))));
-    setmathExpression(Array.from(new Set(text)));
-  };
+  const [mathExpression, setmathExpression] = React.useState<
+    { iteration: number; x: number[]; e: number }[]
+  >([]);
 
   const Showmatrix = (valueAsNumber: number) => {
-    if (valueAsNumber >= 8) {
-      onOpen();
+    if (valueAsNumber > 7) {
       return;
     }
-
     setSize(valueAsNumber);
-
     const newMatrix = Array.from({ length: valueAsNumber }, () =>
       Array(valueAsNumber).fill(0)
     );
+
     setMatrix(newMatrix);
     setResult(newMatrix[0]);
-    console.log(matrix);
+    setXstart(newMatrix[0]);
+  };
+
+  const calseidel = (A: number[][], B: number[], X: number[]) => {
+    const epsilon = 0.00001;
+    const Max = 100;
+    const x = [...X];
+    const a = [...A];
+    let e = 1;
+    let iteration = 0;
+    const text = [];
+
+    while (e > epsilon && iteration < Max) {
+      const xnew = [...x];
+      for (let i = 0; i < size; i++) {
+        let sum = 0;
+        for (let j = 0; j < size; j++) {
+          if (i !== j) {
+            sum += a[i][j] * x[j];
+          }
+        }
+
+        xnew[i] = (B[i] - sum) / a[i][i];
+        e = Math.abs((xnew[0] - x[0]) / xnew[0]);
+        x[i] = xnew[i];
+      }
+
+      iteration++;
+      text.push({
+        iteration: iteration,
+        x: x.map((num) => parseFloat(num.toFixed(6))),
+        e: parseFloat(e.toFixed(6)),
+      });
+    }
+    setResult(x);
+    setmathExpression(text);
   };
 
   const calroot = () => {
-    calGaussJordan(size, matrix, constants);
+    try {
+      calseidel(matrix, constants, Xstart);
+    } catch (error) {
+      onOpen();
+    }
   };
-
   return (
     <>
       <Container maxW="2xl" centerContent mt={30}>
@@ -126,7 +134,7 @@ function GaussJordan() {
         </Box>
         <Box>
           <Box padding={2}>
-            {size > 7 && (
+            {
               <AlertDialog
                 isOpen={isOpen}
                 leastDestructiveRef={cancelRef}
@@ -150,7 +158,7 @@ function GaussJordan() {
                   </AlertDialogContent>
                 </AlertDialogOverlay>
               </AlertDialog>
-            )}
+            }
             {size > 0 &&
               size < 7 &&
               matrix.map((row, i) => (
@@ -227,6 +235,41 @@ function GaussJordan() {
                   </Stack>
                 </>
               ))}
+            <Box mt={5}>
+              {size > 0 &&
+                Xstart.map((col, i) => (
+                  <>
+                    <HStack display={"flex"} justifyContent={"center"}>
+                      <Text p={2} fontSize={"md"}>
+                        <MathJax>{"`X(Start) " + (i + 1) + " :`"} </MathJax>
+                      </Text>
+                      <NumberInput
+                        m={2}
+                        defaultValue={0}
+                        min={0}
+                        width={"max-content"}
+                        variant="filled"
+                        size="sm"
+                        _placeholder={{ opacity: 1, color: "gray.500" }}
+                        onChange={(valueAsString, valueAsNumber) => {
+                          const newMatrix = [...Xstart];
+                          newMatrix[i] = valueAsNumber;
+                          setXstart(newMatrix);
+                        }}
+                      >
+                        <NumberInputField
+                          borderColor={"gray.500"}
+                          borderRadius={5}
+                        />
+                        <NumberInputStepper>
+                          <NumberIncrementStepper />
+                          <NumberDecrementStepper />
+                        </NumberInputStepper>
+                      </NumberInput>
+                    </HStack>
+                  </>
+                ))}
+            </Box>
           </Box>
         </Box>
       </Container>
@@ -277,16 +320,41 @@ function GaussJordan() {
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box w={800} mt={2} color="white">
-          {mathExpression.map((text, index) => (
-            <Box key={index} p={3}>
-              <BlockMath>{text}</BlockMath>
-            </Box>
-          ))}
+        <Box color={"white"} w={800}>
+          {mathExpression.length > 0 && (
+            <TableContainer>
+              <Table variant="simple" size={"sm"}>
+                <Thead gap={20}>
+                  <Tr>
+                    <Th>Iteration</Th>
+                    <Th>X</Th>
+                    <Th>ε</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {mathExpression.map((row, i) => (
+                    <Tr key={i}>
+                      <Td>{row.iteration}</Td>
+                      <Td>
+                        <BlockMath
+                          math={`X = [${row.x
+                            .map((val) => val.toFixed(6))
+                            .join(",")}]`}
+                        />
+                      </Td>
+                      <Td>
+                        <BlockMath math={`Error = ${row.e.toFixed(6)}`} />
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </TableContainer>
+          )}
         </Box>
       </Container>
     </>
   );
 }
 
-export default GaussJordan;
+export default GaussSeidel;

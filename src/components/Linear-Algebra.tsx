@@ -5,6 +5,9 @@ import GaussElimination from "./layout/Linear/GaussElimination";
 import GaussJordan from "./layout/Linear/GaussJordan";
 import LUdecom from "./layout/Linear/LUdecom";
 import Conjugate from "./layout/Linear/Conjugate";
+import Jacobi from "./layout/Linear/Jacobi";
+import GaussSeidel from "./layout/Linear/GaussSeidel";
+import MatrixInverse from "./layout/Linear/MatrixInverse";
 
 function LinearPage() {
   const [solution, setSolution] = React.useState(" ");
@@ -27,9 +30,11 @@ function LinearPage() {
             <option value="Cramerrule">Cramer Rule</option>
             <option value="GaussElimination">Gauss Elimination</option>
             <option value="GaussJordan">Gauss Jordan</option>
+            <option value="Gaussseidel">Gauss Seidel</option>
             <option value="MatrixInverse">Matrix Inversion</option>
             <option value="Lu">LU Decomposition</option>
             <option value="Con">Conjugate Gradient</option>
+            <option value="Jacobi">Jacobi Method</option>
           </Select>
         </AbsoluteCenter>
       </Box>
@@ -37,9 +42,11 @@ function LinearPage() {
         {solution === "Cramerrule" && <Cramer />}
         {solution === "GaussElimination" && <GaussElimination />}
         {solution === "GaussJordan" && <GaussJordan />}
-        {solution === "MatrixInverse" && <GaussElimination />}
+        {solution === "MatrixInverse" && <MatrixInverse />}
         {solution === "Lu" && <LUdecom />}
         {solution === "Con" && <Conjugate />}
+        {solution === "Jacobi" && <Jacobi />}
+        {solution === "Gaussseidel" && <GaussSeidel />}
       </Box>
     </>
   );

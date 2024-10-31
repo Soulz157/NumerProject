@@ -64,19 +64,19 @@ function Regression() {
       }
       B[i] = x.reduce((sum, xi, index) => sum + Math.pow(xi, i) * y[index], 0);
     }
-    console.log(A);
-    console.log(B);
+    // console.log(A);
+    // console.log(B);
 
     const temp: number[] = [];
     const detA = det(A);
-    console.log(detA);
+    // console.log(detA);
     for (let i = 0; i < n; i++) {
       const newMatrix = A.map((row) => [...row]);
       for (let j = 0; j < n; j++) {
         newMatrix[j][i] = B[j];
       }
       const detAi = det(newMatrix);
-      console.log(detAi);
+      // console.log(detAi);
       temp.push(detAi / detA);
     }
     setResult(temp.map((num) => parseFloat(num.toFixed(6))));
@@ -277,6 +277,7 @@ function Regression() {
               isReadOnly
               errorBorderColor="gray.500"
             /> */}
+
           <Box p={2}>
             {size > 0 &&
               result.map((col, i) => (

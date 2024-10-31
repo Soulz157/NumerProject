@@ -1,8 +1,6 @@
 import React from "react";
 import {
-  Box,
-  Text,
-  Container,
+  useDisclosure,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -10,7 +8,9 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Button,
-  useDisclosure,
+  Text,
+  Box,
+  Container,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -23,7 +23,7 @@ import {
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
 
-function Trapezoidal() {
+function Simpson() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 
@@ -32,7 +32,16 @@ function Trapezoidal() {
   const [Xend, setXend] = React.useState(0);
   const [result, setResult] = React.useState(0);
 
-  const calTrap = () => {
+  const Check = (x: number) => {
+    try {
+      const f = evaluate(functionInput, { x: x });
+      return f;
+    } catch {
+      onOpen();
+    }
+  };
+
+  const calsimpson = () => {
     const fx = (x: number) => {
       try {
         const f = evaluate(functionInput, { x: x });
@@ -43,21 +52,13 @@ function Trapezoidal() {
     };
 
     const h = (Xend - Xstart) / 2;
-    const result = h * (fx(Xstart) + fx(Xend));
+    const result = (h / 3) * (fx(Xstart) + 4 * fx(Xstart + h) + fx(Xend));
     setResult(result);
   };
 
-  const Checkfunc = (x: number) => {
-    try {
-      evaluate(functionInput, { x: x });
-    } catch {
-      onOpen();
-    }
-  };
-
   const calroot = () => {
-    Checkfunc(Xstart);
-    calTrap();
+    Check(Xstart);
+    calsimpson();
   };
 
   return (
@@ -224,4 +225,4 @@ function Trapezoidal() {
   );
 }
 
-export default Trapezoidal;
+export default Simpson;

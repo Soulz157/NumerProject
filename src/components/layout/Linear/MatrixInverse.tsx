@@ -20,7 +20,9 @@ import {
   AlertDialogContent,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
-import { inv, multiply } from "mathjs";
+import { create, all } from "mathjs";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function MatrixInverse() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -31,13 +33,57 @@ function MatrixInverse() {
   const [constants, setConstants] = React.useState<number[]>([]);
   const [result, setResult] = React.useState<number[]>([]);
   const B = [matrix];
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+  const math = create(all);
+
+  const matrixlatex = (matrix: number[][]) => {
+    if (Array.isArray(matrix[0])) {
+      let latex = "\\begin{bmatrix} ";
+      for (let i = 0; i < matrix.length; i++) {
+        latex += matrix[i].join(" & ") + " \\\\ ";
+      }
+      latex += "\\end{bmatrix}";
+      return latex;
+    } else {
+      let latex = "\\begin{bmatrix} ";
+      for (let i = 0; i < matrix.length; i++) {
+        latex += matrix[i] + " \\\\ ";
+      }
+      latex += "\\end{bmatrix}";
+      return latex;
+    }
+  };
 
   const calmatrixinverse = (size: number, a: number[][], b: number[]) => {
-    const A = a.map((row) => [...row]);
-    const B = [...b];
-    const Ainv = inv(A);
-    const X = multiply(Ainv, B);
-    setResult(X);
+    const A = math.matrix(a);
+    const B = math.matrix(b);
+    const Ainv = math.inv(A);
+    const X = math.multiply(Ainv, B);
+    const text: string[] = [];
+
+    const matrixA = A.toArray();
+    const matrixB = B.toArray();
+    const matrixAinv = Ainv.toArray();
+
+    text.push(
+      `\\text {Intitial Matrix A :} \\quad ${matrixlatex(
+        matrixA as number[][]
+      )}`
+    );
+    text.push(
+      `\\text {Intitial Matrix B :} \\quad ${matrixlatex(
+        matrixB as number[][]
+      )}`
+    );
+    text.push(
+      `\\text {Inverse Matrix A :} \\quad ${matrixlatex(
+        matrixAinv as number[][]
+      )}`
+    );
+    text.push(`\\text {X :} \\quad ${matrixlatex(X.toArray() as number[][])}`);
+
+    setResult(X.toArray() as number[]);
+    setmathExpression(text);
   };
 
   const Showmatrix = (valueAsNumber: number) => {
@@ -56,6 +102,9 @@ function MatrixInverse() {
   };
 
   const calroot = () => {
+    if (size == 0) {
+      onOpen();
+    }
     calmatrixinverse(size, matrix, constants);
   };
 
@@ -243,8 +292,12 @@ function MatrixInverse() {
           </Box>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

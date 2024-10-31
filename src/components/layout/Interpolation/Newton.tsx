@@ -18,6 +18,7 @@ import {
   Text,
   HStack,
   Input,
+  Checkbox,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 
@@ -30,6 +31,7 @@ function Newton() {
   const [fx, setFx] = React.useState<number[]>([]);
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState(0);
+  const [selectpoint, setSelectpoint] = React.useState<boolean[]>([false]);
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
@@ -68,14 +70,26 @@ function Newton() {
   const calNewton = () => {
     const Xcal = [...X];
     const Fxcal = [...fx];
+    const select = selectpoint
+      .map((value, i) => (value ? i : null))
+      .filter((value) => value !== null);
+    // console.log(select);
 
-    const confficients = recursivenewton(Xcal, Fxcal);
+    if (select.length < 2) {
+      onOpen();
+      return;
+    }
+
+    const Xselect = select.map((value) => Xcal[value]);
+    const Fxselect = select.map((value) => Fxcal[value]);
+
+    const confficients = recursivenewton(Xselect, Fxselect);
 
     let result = confficients[0];
     let temp = 1;
 
     for (let i = 1; i < confficients.length; i++) {
-      temp = temp * (Xinput - Xcal[i - 1]);
+      temp = temp * (Xinput - Xselect[i - 1]);
       result += confficients[i] * temp;
     }
 
@@ -182,42 +196,61 @@ function Newton() {
         <Box p={2}>
           {size > 0 &&
             X.map((col, j) => (
-              <HStack key={j}>
-                <MathJax>{"`X$ :`".replaceAll("$", j.toString())}</MathJax>
-                <NumberInput
-                  key={j}
-                  defaultValue="0"
-                  m={2}
-                  onChange={(valueAsString, valueAsNumber) => {
-                    const newMatrix = [...X];
-                    newMatrix[j] = valueAsNumber;
-                    setX(newMatrix);
-                  }}
-                >
-                  <NumberInputField borderColor={"gray.500"} borderRadius={5} />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-                <MathJax>{"`F(X$) : `".replaceAll("$", j.toString())}</MathJax>
-                <NumberInput
-                  key={j}
-                  defaultValue="0"
-                  m={2}
-                  onChange={(valueAsString, valueAsNumber) => {
-                    const newMatrix = [...fx];
-                    newMatrix[j] = valueAsNumber;
-                    setFx(newMatrix);
-                  }}
-                >
-                  <NumberInputField borderColor={"gray.500"} borderRadius={5} />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </HStack>
+              <>
+                <HStack>
+                  <Checkbox
+                    key={j}
+                    size="md"
+                    colorScheme="teal"
+                    isChecked={selectpoint[j] || false}
+                    onChange={() => {
+                      const updated = [...selectpoint];
+                      updated[j] = !updated[j];
+                      setSelectpoint(updated);
+                    }}
+                  ></Checkbox>
+                  <MathJax>{"`X$ :`".replaceAll("$", j.toString())}</MathJax>
+                  <NumberInput
+                    defaultValue="0"
+                    m={2}
+                    onChange={(valueAsString, valueAsNumber) => {
+                      const newMatrix = [...X];
+                      newMatrix[j] = valueAsNumber;
+                      setX(newMatrix);
+                    }}
+                  >
+                    <NumberInputField
+                      borderColor={"gray.500"}
+                      borderRadius={5}
+                    />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                  <MathJax>
+                    {"`F(X$) : `".replaceAll("$", j.toString())}
+                  </MathJax>
+                  <NumberInput
+                    defaultValue="0"
+                    m={2}
+                    onChange={(valueAsString, valueAsNumber) => {
+                      const newMatrix = [...fx];
+                      newMatrix[j] = valueAsNumber;
+                      setFx(newMatrix);
+                    }}
+                  >
+                    <NumberInputField
+                      borderColor={"gray.500"}
+                      borderRadius={5}
+                    />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </HStack>
+              </>
             ))}
         </Box>
       </Container>
