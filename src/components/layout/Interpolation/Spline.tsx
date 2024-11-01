@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   AlertDialog,
   AlertDialogBody,
@@ -18,6 +19,7 @@ import {
   HStack,
   Input,
   useDisclosure,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { BlockMath } from "react-katex";
@@ -34,6 +36,30 @@ function Spline() {
   const [result, setResult] = React.useState(0);
   const [mathExpression, setmathExpression] = React.useState<string[]>([]);
   const [slopetext, setSlopetext] = React.useState<string[]>([]);
+
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/info/Interpolation"
+      );
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        // console.log(data[random]);
+        const s = data[random].size;
+        const x = data[random].x;
+        console.log(x);
+        const f = data[random].Fx;
+        setSize(s);
+
+        setX([...x]);
+        setFx([...f]);
+        setXinput(data[random].xvalue);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
@@ -132,6 +158,7 @@ function Spline() {
           <NumberInput
             m={2}
             mt={3}
+            value={size || 0}
             defaultValue={0}
             min={0}
             max={5}
@@ -155,6 +182,7 @@ function Spline() {
           <NumberInput
             m={2}
             defaultValue={0}
+            value={Xinput || 0}
             variant="filled"
             size="md"
             _placeholder={{ opacity: 1, color: "gray.500" }}
@@ -171,15 +199,50 @@ function Spline() {
           </NumberInput>
         </Box>
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup gap={3}>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                fetchdata();
+              }}
+            >
+              Random
+            </Button>
+
+            <Button
+              variant="outline"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                calroot();
+              }}
+            >
+              Calculate
+            </Button>
+          </ButtonGroup>
+          <Box mt={5}>
+            <Button
+              variant={"solid"}
+              colorScheme="red"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                setX([]);
+                setFx([]);
+                setResult(0);
+                setXinput(0);
+                setmathExpression([]);
+                setSize(0);
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         </Box>
         <Box p={2}>
           {size > 0 &&
@@ -189,6 +252,7 @@ function Spline() {
                 <NumberInput
                   key={j}
                   defaultValue="0"
+                  value={X[j] || 0}
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {
                     const newMatrix = [...X];
@@ -206,6 +270,7 @@ function Spline() {
                 <NumberInput
                   key={j}
                   defaultValue="0"
+                  value={Fx[j] || 0}
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {
                     const newMatrix = [...Fx];

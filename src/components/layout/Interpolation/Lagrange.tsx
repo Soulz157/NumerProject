@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -19,6 +20,8 @@ import {
   Input,
   Text,
   Checkbox,
+  ButtonGroup,
+  Divider,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { BlockMath } from "react-katex";
@@ -36,6 +39,31 @@ function Lagrange() {
   const [selectpoint, setSelectpoint] = React.useState<boolean[]>([false]);
   const [mathExpression, setmathExpression] = React.useState<string[]>([]);
 
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/info/Interpolation"
+      );
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        // console.log(data[random]);
+        const s = data[random].size;
+        const x = data[random].x;
+        console.log(x);
+        const f = data[random].Fx;
+        setSize(s);
+
+        setX([...x]);
+        setFx([...f]);
+
+        setXinput(data[random].xvalue);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
       return;
@@ -51,30 +79,40 @@ function Lagrange() {
   };
 
   const callagrange = () => {
-    const n = size;
     const x = [...X];
     const fx = [...Fx];
     const text = [];
     const select = selectpoint
-      .map((value, index) => (value ? index : null))
+      .map((value, i) => (value ? i : null))
       .filter((value) => value !== null);
 
     if (select.length < 2) {
       onOpen();
       return;
     }
+
     const Xselect = select.map((value) => x[value]);
     const fxselect = select.map((value) => fx[value]);
+
+    // console.log(Xselect);
+    // console.log(fxselect);
     text.push(`\\text{Lagrange Interpolation}`);
     let result = 0;
 
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < select.length; i++) {
       let temp = fxselect[i];
-      const t1 = `f(x_{${select[i]}}) = ${fx[select[i]].toFixed(6)}`;
-      let t2 = `L_{${select[i]}}(x) = ${fx[select[i]].toFixed(6)}`;
-      for (let j = 0; j < n; j++) {
+      const t1 =
+        fxselect[i] !== undefined
+          ? `f(x_{${select[i]}}) = ${fxselect[i].toFixed(6)}`
+          : "";
+      let t2 =
+        fxselect[i] !== undefined
+          ? `L_{${select[i]}}(x) = ${fxselect[i].toFixed(6)}`
+          : "";
+      for (let j = 0; j < select.length; j++) {
         if (i !== j) {
           temp *= (Xinput - Xselect[j]) / (Xselect[i] - Xselect[j]);
+          // console.log(temp);
           t2 += `\\left(\\frac{x - x_{${select[j]}}}{x_{${select[i]}} - x_{${select[j]}}}\\right)`;
         }
       }
@@ -136,6 +174,7 @@ function Lagrange() {
             defaultValue={0}
             min={0}
             max={5}
+            value={size || 0}
             variant="filled"
             size="md"
             _placeholder={{ opacity: 1, color: "gray.500" }}
@@ -156,6 +195,7 @@ function Lagrange() {
           <NumberInput
             m={2}
             defaultValue={0}
+            value={Xinput || 0}
             variant="filled"
             size="md"
             _placeholder={{ opacity: 1, color: "gray.500" }}
@@ -172,16 +212,52 @@ function Lagrange() {
           </NumberInput>
         </Box>
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup gap={3}>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                fetchdata();
+              }}
+            >
+              Random
+            </Button>
+
+            <Button
+              variant="outline"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                calroot();
+              }}
+            >
+              Calculate
+            </Button>
+          </ButtonGroup>
+          <Box mt={5}>
+            <Button
+              variant={"solid"}
+              colorScheme="red"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                setX([]);
+                setFx([]);
+                setResult(0);
+                setXinput(0);
+                setmathExpression([]);
+                setSize(0);
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         </Box>
+        <Divider p={2}></Divider>
         <Box p={2}>
           {size > 0 &&
             X.map((col, j) => (
@@ -200,6 +276,7 @@ function Lagrange() {
                 <MathJax>{"`X$ :`".replaceAll("$", j.toString())}</MathJax>
                 <NumberInput
                   defaultValue="0"
+                  value={X[j] || 0}
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {
                     const newMatrix = [...X];
@@ -216,6 +293,7 @@ function Lagrange() {
                 <MathJax>{"`F(X$) : `".replaceAll("$", j.toString())}</MathJax>
                 <NumberInput
                   defaultValue="0"
+                  value={Fx[j] || 0}
                   m={2}
                   onChange={(valueAsString, valueAsNumber) => {
                     const newMatrix = [...Fx];

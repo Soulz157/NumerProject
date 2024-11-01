@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -19,6 +20,8 @@ import {
   HStack,
   Input,
   Checkbox,
+  ButtonGroup,
+  Divider,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { BlockMath } from "react-katex";
@@ -36,6 +39,31 @@ function Newton() {
   const [selectpoint, setSelectpoint] = React.useState<boolean[]>([false]);
   const [mathExpression, setmathExpression] = React.useState<string[]>([]);
 
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:8000/info/Interpolation"
+      );
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        // console.log(data[random]);
+        const s = data[random].size;
+        const x = data[random].x;
+        console.log(x);
+        const f = data[random].Fx;
+        setSize(s);
+
+        setX([...x]);
+        setFx([...f]);
+
+        setXinput(data[random].xvalue);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
       return;
@@ -49,7 +77,6 @@ function Newton() {
 
     setX(newMatrix[0]);
     setFx(newMatrix[0]);
-    console.log(X);
   };
 
   const recursivenewton = (Xvalue: number[], Fx: number[]) => {
@@ -156,6 +183,7 @@ function Newton() {
           <NumberInput
             m={2}
             mt={3}
+            value={size || 0}
             defaultValue={0}
             min={0}
             max={5}
@@ -179,6 +207,7 @@ function Newton() {
           <NumberInput
             m={2}
             defaultValue={0}
+            value={Xinput || 0}
             variant="filled"
             size="md"
             _placeholder={{ opacity: 1, color: "gray.500" }}
@@ -195,16 +224,52 @@ function Newton() {
           </NumberInput>
         </Box>
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup gap={3}>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                fetchdata();
+              }}
+            >
+              Random
+            </Button>
+
+            <Button
+              variant="outline"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                calroot();
+              }}
+            >
+              Calculate
+            </Button>
+          </ButtonGroup>
+          <Box mt={5}>
+            <Button
+              variant={"solid"}
+              colorScheme="red"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                setX([]);
+                setFx([]);
+                setResult(0);
+                setXinput(0);
+                setmathExpression([]);
+                setSize(0);
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         </Box>
+        <Divider p={2}></Divider>
         <Box p={2}>
           {size > 0 &&
             X.map((col, j) => (
@@ -224,6 +289,7 @@ function Newton() {
                   <MathJax>{"`X$ :`".replaceAll("$", j.toString())}</MathJax>
                   <NumberInput
                     defaultValue="0"
+                    value={X[j] || 0}
                     m={2}
                     onChange={(valueAsString, valueAsNumber) => {
                       const newMatrix = [...X];
@@ -245,6 +311,7 @@ function Newton() {
                   </MathJax>
                   <NumberInput
                     defaultValue="0"
+                    value={fx[j] || 0}
                     m={2}
                     onChange={(valueAsString, valueAsNumber) => {
                       const newMatrix = [...fx];

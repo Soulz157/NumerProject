@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Box,
   Container,
@@ -26,6 +27,8 @@ import {
   Th,
   Td,
   Table,
+  Divider,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { BlockMath } from "react-katex";
@@ -45,6 +48,39 @@ function Jacobi() {
   const [mathExpression, setmathExpression] = React.useState<
     { iteration: number; x: number[]; e: number }[]
   >([]);
+
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/info/linear");
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        // console.log(data[random]);
+        const s = data[random].size;
+        const start = data[random].xl;
+        console.log(s);
+        setSize(s);
+        randommatrix(s);
+        setXstart(new Array(s).fill(start));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const randommatrix = (size: number) => {
+    const newMatrix = Array.from({ length: size }, () => Array(size).fill(0));
+    const newConstants = Array(size).fill(0);
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        newMatrix[i][j] = Math.floor(Math.random() * 10);
+      }
+      newConstants[i] = Math.floor(Math.random() * 10);
+    }
+    setMatrix(newMatrix);
+    setConstants(newConstants);
+    setResult(newMatrix[0]);
+  };
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 7) {
@@ -93,6 +129,9 @@ function Jacobi() {
   };
 
   const calroot = () => {
+    if (size === 0) {
+      onOpen();
+    }
     calJacobi(matrix, constants, Xstart);
   };
   return (
@@ -109,6 +148,7 @@ function Jacobi() {
           <NumberInput
             m={2}
             defaultValue={0}
+            value={size || 0}
             min={0}
             max={7}
             variant="filled"
@@ -128,7 +168,7 @@ function Jacobi() {
         </Box>
         <Box>
           <Box padding={2}>
-            {size > 7 && (
+            {
               <AlertDialog
                 isOpen={isOpen}
                 leastDestructiveRef={cancelRef}
@@ -152,7 +192,7 @@ function Jacobi() {
                   </AlertDialogContent>
                 </AlertDialogOverlay>
               </AlertDialog>
-            )}
+            }
             {size > 0 &&
               size < 7 &&
               matrix.map((row, i) => (
@@ -167,6 +207,7 @@ function Jacobi() {
                         <Box key={i} p={1}>
                           <NumberInput
                             key={j}
+                            value={matrix[i][j] || 0}
                             variant="filled"
                             size="sm"
                             defaultValue="0"
@@ -202,6 +243,7 @@ function Jacobi() {
                           <Box key={i} p={1}>
                             <NumberInput
                               key={j}
+                              value={constants[j] || 0}
                               variant="filled"
                               size="sm"
                               defaultValue="0"
@@ -240,6 +282,7 @@ function Jacobi() {
                       <NumberInput
                         m={2}
                         defaultValue={0}
+                        value={Xstart[i] || 0}
                         min={0}
                         width={"max-content"}
                         variant="filled"
@@ -276,16 +319,51 @@ function Jacobi() {
         mt={5}
       >
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup gap={3}>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                fetchdata();
+              }}
+            >
+              Random
+            </Button>
+
+            <Button
+              variant="outline"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                calroot();
+              }}
+            >
+              Calculate
+            </Button>
+          </ButtonGroup>
+          <Box mt={5}>
+            <Button
+              variant={"solid"}
+              colorScheme="red"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                setMatrix([[]]);
+                setConstants([]);
+                setResult([]);
+                setmathExpression([]);
+                setSize(0);
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         </Box>
+        <Divider p={2}></Divider>
         <Box p={2}>
           <Text fontSize="xl" fontWeight="bold" color="white">
             Result

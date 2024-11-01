@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Box,
   Button,
@@ -18,6 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogBody,
   AlertDialogFooter,
+  ButtonGroup,
+  Divider,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { BlockMath } from "react-katex";
@@ -33,6 +36,37 @@ function LUdecom() {
   const [result, setResult] = React.useState<number[]>([]);
   const B = [matrix];
   const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/info/linear");
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        // console.log(data[random]);
+        const s = data[random].size;
+        console.log(s);
+        setSize(s);
+        randommatrix(s);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const randommatrix = (size: number) => {
+    const newMatrix = Array.from({ length: size }, () => Array(size).fill(0));
+    const newConstants = Array(size).fill(0);
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        newMatrix[i][j] = Math.floor(Math.random() * 10);
+      }
+      newConstants[i] = Math.floor(Math.random() * 10);
+    }
+    setMatrix(newMatrix);
+    setConstants(newConstants);
+    setResult(newMatrix[0]);
+  };
 
   const matrixlatex = (matrix: number[][]) => {
     if (Array.isArray(matrix[0])) {
@@ -190,6 +224,7 @@ function LUdecom() {
           <MathJax>{"`MatrixN*N`"}</MathJax>
           <NumberInput
             m={2}
+            value={size || 0}
             defaultValue={0}
             min={0}
             max={7}
@@ -210,7 +245,7 @@ function LUdecom() {
         </Box>
         <Box>
           <Box padding={2}>
-            {size > 7 && (
+            {
               <AlertDialog
                 isOpen={isOpen}
                 leastDestructiveRef={cancelRef}
@@ -234,7 +269,7 @@ function LUdecom() {
                   </AlertDialogContent>
                 </AlertDialogOverlay>
               </AlertDialog>
-            )}
+            }
             {size > 0 &&
               size < 7 &&
               matrix.map((row, i) => (
@@ -249,6 +284,7 @@ function LUdecom() {
                         <Box key={i} p={1}>
                           <NumberInput
                             key={j}
+                            value={matrix[i][j] || 0}
                             variant="filled"
                             size="sm"
                             defaultValue="0"
@@ -284,6 +320,7 @@ function LUdecom() {
                           <Box key={i} p={1}>
                             <NumberInput
                               key={j}
+                              value={constants[j] || 0}
                               variant="filled"
                               size="sm"
                               defaultValue="0"
@@ -323,16 +360,51 @@ function LUdecom() {
         mt={5}
       >
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup gap={3}>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                fetchdata();
+              }}
+            >
+              Random
+            </Button>
+
+            <Button
+              variant="outline"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                calroot();
+              }}
+            >
+              Calculate
+            </Button>
+          </ButtonGroup>
+          <Box mt={5}>
+            <Button
+              variant={"solid"}
+              colorScheme="red"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                setMatrix([[]]);
+                setConstants([]);
+                setResult([]);
+                setmathExpression([]);
+                setSize(0);
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         </Box>
+        <Divider p={2}></Divider>
         <Box p={2}>
           <Text fontSize="xl" fontWeight="bold" color="white">
             Result

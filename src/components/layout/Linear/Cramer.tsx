@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Box,
   Input,
@@ -11,20 +12,22 @@ import {
   NumberDecrementStepper,
   Button,
   Stack,
-  // useDisclosure,
-  // AlertDialog,
-  // AlertDialogBody,
-  // AlertDialogFooter,
-  // AlertDialogHeader,
-  // AlertDialogContent,
-  // AlertDialogOverlay,
+  ButtonGroup,
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  Divider,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { det } from "mathjs";
 
 function Cramer() {
-  // const { isOpen, onOpen, onClose } = useDisclosure();
-  // const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   const [size, setSize] = React.useState(0);
   const [matrix, setMatrix] = React.useState<number[][]>([[]]);
@@ -39,6 +42,37 @@ function Cramer() {
       result: " ",
     },
   ]);
+
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/info/linear");
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        // console.log(data[random]);
+        const s = data[random].size;
+        console.log(s);
+        setSize(s);
+        randommatrix(s);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const randommatrix = (size: number) => {
+    const newMatrix = Array.from({ length: size }, () => Array(size).fill(0));
+    const newConstants = Array(size).fill(0);
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        newMatrix[i][j] = Math.floor(Math.random() * 10);
+      }
+      newConstants[i] = Math.floor(Math.random() * 10);
+    }
+    setMatrix(newMatrix);
+    setConstants(newConstants);
+    setResult(newMatrix[0]);
+  };
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber >= 8) {
@@ -90,11 +124,35 @@ function Cramer() {
   };
 
   const calroot = () => {
+    if (size === 0) {
+      onOpen();
+    }
     calcramer(size, matrix, constants);
   };
 
   return (
     <>
+      {
+        <AlertDialog
+          isOpen={isOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader fontSize="lg" fontWeight="bold">
+                Error
+              </AlertDialogHeader>
+              <AlertDialogBody>Please Input size matrix</AlertDialogBody>
+              <AlertDialogFooter>
+                <Button ref={cancelRef} onClick={onClose}>
+                  OK
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      }
       <Container maxW="2xl" centerContent mt={30}>
         <Box
           padding="4"
@@ -106,6 +164,7 @@ function Cramer() {
           <MathJax>{"`MatrixN*N`"}</MathJax>
           <NumberInput
             m={2}
+            value={size || 0}
             defaultValue={0}
             min={0}
             max={7}
@@ -136,6 +195,7 @@ function Cramer() {
                           <NumberInput
                             key={j}
                             variant="filled"
+                            value={matrix[i][j] || 0}
                             size="sm"
                             defaultValue="0"
                             _placeholder={{ opacity: 1, color: "gray.500" }}
@@ -170,6 +230,7 @@ function Cramer() {
                           <Box key={i} p={1}>
                             <NumberInput
                               key={j}
+                              value={constants[i] || 0}
                               variant="filled"
                               size="sm"
                               defaultValue="0"
@@ -209,16 +270,51 @@ function Cramer() {
         mt={5}
       >
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup gap={3}>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                fetchdata();
+              }}
+            >
+              Random
+            </Button>
+
+            <Button
+              variant="outline"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                calroot();
+              }}
+            >
+              Calculate
+            </Button>
+          </ButtonGroup>
+          <Box mt={5}>
+            <Button
+              variant={"solid"}
+              colorScheme="red"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                setMatrix([[]]);
+                setConstants([]);
+                setResult([]);
+                setmathExpression([]);
+                setSize(0);
+              }}
+            >
+              Reset
+            </Button>
+          </Box>
         </Box>
+        <Divider p={2}></Divider>
         <Box p={2}>
           <Text fontSize="xl" fontWeight="bold" color="white">
             Result
