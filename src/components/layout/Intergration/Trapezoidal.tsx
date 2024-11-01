@@ -1,4 +1,5 @@
 import React from "react";
+import dynamic from "next/dynamic";
 import {
   Box,
   Text,
@@ -22,6 +23,10 @@ import {
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
+
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function Trapezoidal() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -31,6 +36,7 @@ function Trapezoidal() {
   const [Xstart, setXstart] = React.useState(0);
   const [Xend, setXend] = React.useState(0);
   const [result, setResult] = React.useState(0);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
 
   const calTrap = () => {
     const fx = (x: number) => {
@@ -44,7 +50,71 @@ function Trapezoidal() {
 
     const h = (Xend - Xstart) / 2;
     const result = h * (fx(Xstart) + fx(Xend));
+    const text = [];
+    text.push(`f(x_{0}) = f(${Xstart}) = ${fx(Xstart)}`);
+    text.push(`f(x_{1}) = f(${Xend}) = ${fx(Xend)}`);
+    text.push(
+      `F(x) = \\frac{h}{2} \\cdot (f(a) + f(b)) = {${h}} \\cdot (${fx(
+        Xstart
+      )} + ${fx(Xend)}) = ${result}`
+    );
+    setmathExpression(text);
     setResult(result);
+  };
+
+  const getGraphData = () => {
+    const fx = (x: number) => {
+      try {
+        const f = evaluate(functionInput, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+    const xvalue: number[] = [];
+    const yvalue: number[] = [];
+
+    for (let i = Xstart - 1; i <= Xend + 1; i += 0.1) {
+      xvalue.push(i);
+      const y = fx(i);
+      yvalue.push(y);
+    }
+
+    return {
+      x: xvalue,
+      y: yvalue,
+      type: "scatter",
+      mode: "lines",
+      line: { color: "blue" },
+    };
+  };
+
+  const getShadeData = () => {
+    const fx = (x: number) => {
+      try {
+        const f = evaluate(functionInput, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+    const xFill = [Xstart, Xend, Xend, Xstart];
+    const yFill = [
+      0,
+      Number.isNaN(parseFloat(fx(Xstart))) ? 0 : parseFloat(fx(Xstart)),
+      Number.isNaN(parseFloat(fx(Xstart))) ? 0 : parseFloat(fx(Xend)),
+      0,
+    ];
+
+    return {
+      x: xFill,
+      y: yFill,
+      fill: "tozeroy",
+      type: "scatter",
+      mode: "lines",
+      fillcolor: "rgba(0, 100, 255, 0.3)",
+      line: { color: "rgba(0, 100, 255, 0)" },
+    };
   };
 
   const Checkfunc = (x: number) => {
@@ -216,8 +286,31 @@ function Trapezoidal() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box mt={2}>
+          <Plot
+            data={[
+              getGraphData() as Plotly.Data,
+              getShadeData() as Plotly.Data,
+            ]}
+            layout={{
+              width: 800,
+              height: 400,
+              title: "Trapezoidal Rule",
+              xaxis: {
+                title: "X",
+              },
+              yaxis: {
+                title: "Y",
+              },
+            }}
+          />
+        </Box>
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

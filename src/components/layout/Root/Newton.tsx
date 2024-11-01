@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import dynamic from "next/dynamic";
 import {
   Box,
@@ -21,6 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { evaluate, derivative } from "mathjs";
 import { MathJax } from "better-react-mathjax";
@@ -30,7 +32,6 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 function Newton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
-  const [tolence, setTolence] = React.useState(false);
 
   const [functionInput, setFunctionInput] = React.useState("x^2 - 4");
   const [xl, setxl] = React.useState(0.0);
@@ -43,6 +44,26 @@ function Newton() {
     },
   ]);
   const [datachart, setDatachart] = React.useState([{ x: 0, y: 0 }]);
+
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/info/root");
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        const func = data[random].solution;
+        const xs = data[random].xl;
+        console.log(func);
+        console.log(xs);
+        setFunctionInput(func);
+        setxl(xs);
+        // setData([]);
+        // setDatachart([]);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const calnewton = (xintial: number) => {
     const fx = (x: number) => {
@@ -139,9 +160,8 @@ function Newton() {
   const Checkfunc = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
-      setTolence(false);
     } catch {
-      setTolence(true);
+      onOpen();
     }
   };
 
@@ -152,7 +172,7 @@ function Newton() {
 
   return (
     <>
-      {tolence && (
+      {
         <AlertDialog
           isOpen={isOpen}
           leastDestructiveRef={cancelRef}
@@ -176,7 +196,7 @@ function Newton() {
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
-      )}
+      }
       <Box
         textAlign="center"
         fontSize="xl"
@@ -247,35 +267,70 @@ function Newton() {
                 />
               </Box>
               <Box mt={10}>
+                <ButtonGroup gap={3}>
+                  <Button
+                    variant="outline"
+                    colorScheme="teal"
+                    fontWeight="bold"
+                    fontSize={"lg"}
+                    onClick={() => {
+                      fetchdata();
+                    }}
+                  >
+                    Random
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    borderColor={"white"}
+                    fontWeight="bold"
+                    fontSize={"lg"}
+                    onClick={() => {
+                      calroot();
+                    }}
+                  >
+                    Calculate
+                  </Button>
+                </ButtonGroup>
+              </Box>
+              <Box mt={5}>
                 <Button
                   variant="outline"
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
                   onClick={() => {
-                    calroot();
-                    onOpen();
+                    setFunctionInput("");
+                    setxl(0);
+                    setData([
+                      {
+                        iteration: 0,
+                        xl: 0,
+                        xm: 0,
+                      },
+                    ]);
+                    setDatachart([{ x: 0, y: 0 }]);
                   }}
                 >
-                  Calculate
+                  Reset
                 </Button>
               </Box>
-              <Box mt={10}>
-                <Text fontSize="xl" fontWeight="bold" color="white">
-                  Result
-                </Text>
-                <Box padding={2}>
-                  <Input
-                    variant="filled"
-                    width={"max-content"}
-                    size="md"
-                    placeholder={"Result"}
-                    _placeholder={{ opacity: 1, color: "gray.500" }}
-                    isReadOnly
-                    errorBorderColor="gray.500"
-                    value={X}
-                  />
-                </Box>
+            </Box>
+            <Box mt={10}>
+              <Text fontSize="xl" fontWeight="bold" color="white">
+                Result
+              </Text>
+              <Box padding={2}>
+                <Input
+                  variant="filled"
+                  width={"max-content"}
+                  size="md"
+                  placeholder={"Result"}
+                  _placeholder={{ opacity: 1, color: "gray.500" }}
+                  isReadOnly
+                  errorBorderColor="gray.500"
+                  value={X}
+                />
               </Box>
             </Box>
           </GridItem>

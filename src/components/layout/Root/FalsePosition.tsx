@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import dynamic from "next/dynamic";
 import {
   Box,
@@ -21,6 +22,9 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  ButtonGroup,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import { evaluate } from "mathjs";
 import { MathJax } from "better-react-mathjax";
@@ -30,7 +34,6 @@ const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 function FalsePosition() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
-  const [tolence, setTolence] = React.useState(false);
 
   const [functionInput, setFunctionInput] = React.useState("x^2 - 4");
   const [xl, setxl] = React.useState(0.0);
@@ -45,6 +48,27 @@ function FalsePosition() {
     },
   ]);
   const [datachart, setDatachart] = React.useState([{ x: 0, y: 0 }]);
+
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/info/root");
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        const func = data[random].solution;
+        const xs = data[random].xl;
+        const xe = data[random].xr;
+        console.log(func);
+        console.log(xs);
+        console.log(xe);
+        setFunctionInput(func);
+        setxl(xs);
+        setxr(xe);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const error = (xnew: number, xold: number) =>
     Math.abs((xnew - xold) / xnew) * 100;
@@ -136,9 +160,8 @@ function FalsePosition() {
   const Checkfunc = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
-      setTolence(false);
     } catch {
-      setTolence(true);
+      onOpen();
     }
   };
 
@@ -149,7 +172,7 @@ function FalsePosition() {
   };
   return (
     <>
-      {tolence && (
+      {
         <AlertDialog
           isOpen={isOpen}
           leastDestructiveRef={cancelRef}
@@ -173,7 +196,7 @@ function FalsePosition() {
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
-      )}
+      }
       <Box
         textAlign="center"
         fontSize="xl"
@@ -230,68 +253,108 @@ function FalsePosition() {
                 <MathJax>{"`XL`"}</MathJax>
               </Text>
               <Box padding={2}>
-                <Input
-                  // value={xl}
-                  onChange={(e) => {
-                    setxl(parseFloat(e.target.value));
+                <NumberInput
+                  value={xl ? xl : 0.0}
+                  onChange={(valueAsNumber) => {
+                    setxl(Number(valueAsNumber));
                   }}
                   variant="filled"
                   size="md"
-                  placeholder="0.00"
                   _placeholder={{ opacity: 1, color: "gray.500" }}
                   isInvalid
                   errorBorderColor="gray.500"
-                />
+                >
+                  <NumberInputField />
+                </NumberInput>
               </Box>
               <Box>
                 <Text fontSize="xl" fontWeight="bold" color="white">
                   <MathJax>{"`XR`"}</MathJax>
                 </Text>
                 <Box padding={2}>
-                  <Input
-                    // value={xr}
-                    onChange={(e) => {
-                      setxr(parseFloat(e.target.value));
+                  <NumberInput
+                    value={xr ? xr : 0}
+                    onChange={(valueAsNumber) => {
+                      setxr(Number(valueAsNumber));
                     }}
                     variant="filled"
                     size="md"
-                    placeholder="0.00"
                     _placeholder={{ opacity: 1, color: "gray.500" }}
                     isInvalid
                     errorBorderColor="gray.500"
-                  />
+                  >
+                    <NumberInputField />
+                  </NumberInput>
                 </Box>
               </Box>
               <Box mt={10}>
+                <ButtonGroup gap={3}>
+                  <Button
+                    variant="outline"
+                    colorScheme="teal"
+                    fontWeight="bold"
+                    fontSize={"lg"}
+                    onClick={() => {
+                      fetchdata();
+                    }}
+                  >
+                    Random
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    borderColor={"white"}
+                    fontWeight="bold"
+                    fontSize={"lg"}
+                    onClick={() => {
+                      calroot();
+                    }}
+                  >
+                    Calculate
+                  </Button>
+                </ButtonGroup>
+              </Box>
+              <Box mt={5}>
                 <Button
                   variant="outline"
                   borderColor={"white"}
                   fontWeight="bold"
                   fontSize={"lg"}
                   onClick={() => {
-                    calroot();
-                    onOpen();
+                    setFunctionInput("");
+                    setxl(0);
+                    setxr(0);
+                    setX(0);
+                    setData([
+                      {
+                        iteration: 0,
+                        xl: 0,
+                        xr: 0,
+                        xm: 0,
+                      },
+                    ]);
+                    setDatachart([{ x: 0, y: 0 }]);
                   }}
                 >
-                  Calculate
+                  Reset
                 </Button>
               </Box>
-              <Box mt={10}>
-                <Text fontSize="xl" fontWeight="bold" color="white">
-                  Result
-                </Text>
-                <Box padding={2}>
-                  <Input
-                    variant="filled"
-                    width={"max-content"}
-                    size="md"
-                    placeholder={"Result"}
-                    _placeholder={{ opacity: 1, color: "gray.500" }}
-                    isReadOnly
-                    errorBorderColor="gray.500"
-                    value={X}
-                  />
-                </Box>
+            </Box>
+            <Box mt={10}>
+              <Text fontSize="xl" fontWeight="bold" color="white">
+                Result
+              </Text>
+              <Box padding={2}>
+                <Input
+                  variant="filled"
+                  width={"max-content"}
+                  size="md"
+                  placeholder={"Result"}
+                  _placeholder={{ opacity: 1, color: "gray.500" }}
+                  isReadOnly
+                  errorBorderColor="gray.500"
+                  value={X}
+                />
               </Box>
             </Box>
           </GridItem>

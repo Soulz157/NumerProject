@@ -20,6 +20,8 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function Spline() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -30,6 +32,8 @@ function Spline() {
   const [Fx, setFx] = React.useState<number[]>([]);
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState(0);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+  const [slopetext, setSlopetext] = React.useState<string[]>([]);
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
@@ -47,17 +51,21 @@ function Spline() {
   };
 
   const Findslope = (X: number[], Fx: number[]) => {
+    const textM: string[] = [];
     const slope = Array(size - 1).fill(0);
     const x = [...X];
     const fx = [...Fx];
     for (let i = 0; i < size - 1; i++) {
       slope[i] = (fx[i + 1] - fx[i]) / (x[i + 1] - x[i]);
+      textM.push(`\\text {m(}${i + 1}) = ${slope[i]}`);
     }
     console.log(slope);
+    setSlopetext(textM);
     return slope;
   };
 
   const calspline = () => {
+    const text: string[] = [];
     const x = [...X];
     const fx = [...Fx];
     const slope = Findslope(x, fx);
@@ -65,6 +73,11 @@ function Spline() {
       if (Xinput >= x[i] && Xinput <= x[i + 1]) {
         // const m = (fx[i + 1] - fx[i]) / (x[i + 1] - x[i]);
         const result = fx[i] + slope[i] * (Xinput - x[i]);
+        text.push(`f(${Xinput}) = f(x_{${i}}) + m \\cdot (x - x_{${i}})`);
+        text.push(
+          `f(${Xinput}) = ${fx[i]} + ${slope} \\cdot (${Xinput} - ${x[i]}) = ${result}`
+        );
+        setmathExpression(text);
         setResult(result);
         break;
       }
@@ -241,8 +254,17 @@ function Spline() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {slopetext.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

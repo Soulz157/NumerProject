@@ -22,8 +22,8 @@ import {
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
-import FirstDivied from "./FirstDivied";
-import SecondDivied from "./SecondDivied";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function Divied() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -36,6 +36,314 @@ function Divied() {
   const [H, setH] = React.useState(0);
   const [functionInput, setFunctionInput] = React.useState("...");
   const [result, setResult] = React.useState(0);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+
+  function FirstDivied(
+    error: string,
+    direc: string,
+    h: number,
+    x: number,
+    func: string
+  ) {
+    const text = [];
+    const Fx = (x: number) => {
+      try {
+        const f = evaluate(func, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+    if (error === "1") {
+      if (direc === "forward") {
+        const result = (Fx(x + h) - Fx(x)) / h;
+        text.push(`{f'(x)} = \\frac{f(x_i + 1) - f(x)}{h}`);
+        text.push(
+          `{f'(${Xinput})} = \\frac{f(${Xinput} + ${H}) - f(${Xinput})}{${H}}`
+        );
+        text.push(`f'(${Xinput}) =  ${result}`);
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "backward") {
+        const result = (Fx(x) - Fx(x - h)) / h;
+        text.push(`f'(x) = \\frac{f(x + h) - f(x)}{h}`);
+        text.push(
+          `f'(${Xinput}) = \\frac{f(${Xinput} + ${H}) - f(${Xinput})}{${H}}`
+        );
+        text.push(`f'(${Xinput}) = ${result}`);
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "central") {
+        const result = (Fx(x + h) - Fx(x - h)) / (2 * h);
+        text.push(`f'(x) = \\frac{f(x + h) - f(x - h)}{2h}`);
+        text.push(
+          `f'(${Xinput}) = \\frac{f(${Xinput} + ${H}) - f(${Xinput})}{${H}}`
+        );
+        text.push(`f'(${Xinput}) = ${result}`);
+        setmathExpression(text);
+        return result;
+      }
+    } else if (error === "2") {
+      if (direc === "forward") {
+        const result = (-Fx(x + 2 * h) + 4 * Fx(x + h) - 3 * Fx(x)) / (2 * h);
+        text.push(`f'(x) = \\frac{-f(x + 2h) + 4f(x + h) - 3f(x)}{2h}`);
+        text.push(
+          `f'(${Xinput}) = \\frac{-f(${Xinput} + 2${H}) + 4f(${Xinput} + ${H}) - 3f(${Xinput})}{2(${H})}`
+        );
+        text.push(`f'(${Xinput}) = ${result}`);
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "backward") {
+        const result = (3 * Fx(x) - 4 * Fx(x - h) + Fx(x - 2 * h)) / (2 * h);
+        text.push(`f'(x) = \\frac{3f(x) - 4f(x - h) + f(x - 2h)}{2h}`);
+        text.push(
+          `f'(${Xinput}) = \\frac{3f(${Xinput}) - 4f(${Xinput} - ${H}) + f(${Xinput} - 2${H})}{2(${H})}`
+        );
+        text.push(`f'(${Xinput}) = ${result}`);
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "central") {
+        const result =
+          (-Fx(x + 2 * h) + 8 * Fx(x + h) - 8 * Fx(x - h) + Fx(x - 2 * h)) /
+          (12 * h);
+        text.push(
+          `f'(x) = \\frac{-f(x + 2h) + 8f(x + h) - 8f(x - h) + f(x - 2h)}{12h}`
+        );
+        text.push(
+          `f'(${Xinput}) = \\frac{-f(${Xinput} + 2(${H})) + 8f(${Xinput} + ${H}) - 8f(${Xinput} - ${H}) + f(${Xinput} - 2(${H}))}{12(${H})}`
+        );
+        text.push(`f'(${Xinput}) = ${result}`);
+        setmathExpression(text);
+        return result;
+      }
+    } else if (error === "3") {
+      if (direc === "forward") {
+        const result =
+          (-25 * Fx(x) +
+            48 * Fx(x + h) -
+            36 * Fx(x + 2 * h) +
+            16 * Fx(x + 3 * h) -
+            3 * Fx(x + 4 * h)) /
+          (12 * h);
+        text.push(
+          `f'(x) = \\frac{-2f(x + 5h) + 11f(x + 4h) - 24f(x + 3h) + 26f(x + 2h) - 14f(x + h) + 3f(x)}{h^4}`
+        );
+        text.push(
+          `f'(${Xinput}) = \\frac{-2f(${Xinput} + 5(${H})) + 11f(${Xinput} + 4(${H})) - 24f(${Xinput} + 3(${H})) + 26f(${Xinput} + 2(${H})) - 14f(${Xinput} + ${H}) + 3f(${Xinput})}{(${H})^4}`
+        );
+        text.push(`f'(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "backward") {
+        const result =
+          (25 * Fx(x) -
+            48 * Fx(x - h) +
+            36 * Fx(x - 2 * h) -
+            16 * Fx(x - 3 * h) +
+            3 * Fx(x - 4 * h)) /
+          (12 * h);
+        text.push(
+          `f'(x) = \\frac{25f(x) -
+            48f(x - h) +
+            36f(x - 2h) -
+            16f(x - 3h) +
+            3f(x - 4h)} {
+          12h};`
+        );
+        text.push(`f'(${Xinput}) = \\frac{25f(${Xinput}) - 48f(${Xinput} - ${H}) +
+            36f(${Xinput} -2(${H})) -
+            16f(${Xinput} -_(${H})) +
+            3f(${Xinput} -4(${H})))}{(${H})^12}`);
+        text.push(`f'(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "central") {
+        const result =
+          (-Fx(x + 2 * h) + 8 * Fx(x + h) - 8 * Fx(x - h) + Fx(x - 2 * h)) /
+          (12 * h);
+        text.push(
+          `f'(x) = \\frac{-f(x + 2h) -
+           + 8fx(x + h) - 8f(x - h) + f(x - 2h)} {
+          12h};`
+        );
+        text.push(
+          `f'(${Xinput}) = \\frac{-f(${Xinput} + 2(${H})) + 8f(${Xinput} + ${H}) - 8f(${Xinput} - ${H}) + f(${Xinput} -2(${H})))}{(${H})^12}`
+        );
+        text.push(`f'(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+    }
+  }
+
+  function SecondDivied(
+    error: string,
+    direc: string,
+    h: number,
+    x: number,
+    func: string
+  ) {
+    const text = [];
+    const Fx = (x: number) => {
+      try {
+        const f = evaluate(func, { x: x });
+        return f;
+      } catch {
+        return NaN;
+      }
+    };
+    if (error === "1") {
+      if (direc === "forward") {
+        const result = (Fx(x + 2 * h) - 2 * Fx(x + h) + Fx(x)) / Math.pow(h, 2);
+        text.push(`f''(x) = \\frac{f(x + 2h) - 2f(x + h) + f(x)}{h^2}`);
+        text.push(
+          `f''(${Xinput}) = \\frac{f(${Xinput} + 2(${H})) - 2f(${Xinput} + (${H})) + f(${Xinput})}{(${H})^2}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "backward") {
+        const result = (Fx(x) - 2 * Fx(x - h) + Fx(x - 2 * h)) / Math.pow(h, 2);
+        text.push(`f''(x) = \\frac{f(x) - 2f(x - h) + f(x - 2h)}{h^2}`);
+        text.push(
+          `f''(${Xinput}) = \\frac{f(${Xinput}) - 2f(${Xinput} - (${H})) + f(${Xinput} - 2(${H}))}{(${H})^2}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+
+      if (direc === "central") {
+        const result = (Fx(x + h) - 2 * Fx(x) + Fx(x - h)) / Math.pow(h, 2);
+        text.push(`f''(x) = \\frac{f(x + h) - 2f(x) + f(x - h)}{h^2}`);
+        text.push(
+          `f''(${Xinput}) = \\frac{f(${Xinput} + (${H}) - 2f(${Xinput}) + f(${Xinput} - (${H}))}{(${H})^2}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+    } else if (error === "2") {
+      if (direc === "forward") {
+        const result =
+          (-Fx(x + 3 * h) + 4 * Fx(x + 2 * h) - 5 * Fx(x + h) + 2 * Fx(x)) /
+          Math.pow(h, 2);
+        text.push(
+          `f''(x) = \\frac{-f(x + 3h) + 4f(x + 2h) - 5f(x + h) + 2f(x)}{h^2}`
+        );
+        text.push(
+          `f''(${Xinput}) = \\frac{-f(${Xinput} + 3(${H})) + 4f(${Xinput} + 2(${H})) - 5f(${Xinput} + (${H})) + 2f(${Xinput})}{(${H})^2}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+      if (direc === "backward") {
+        const result =
+          (2 * Fx(x) - 5 * Fx(x - h) + 4 * Fx(x - 2 * h) - Fx(x - 3 * h)) /
+          Math.pow(h, 2);
+        text.push(
+          `f''(x) = \\frac{2f(x) - 5f(x - h) + 4f(x - 2h) - f(x - 3h)}{h^2}`
+        );
+        text.push(
+          `f''(${Xinput}) = \\frac{2f(${Xinput}) - 5f(${Xinput} - (${H})) + 4f(${Xinput} - 2(${H})) - f(${Xinput} - 3(${H}))}{(${H})^2}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+      if (direc === "central") {
+        const result = (Fx(x + h) - 2 * Fx(x) + Fx(x - h)) / Math.pow(h, 2);
+        text.push(`f''(x) = \\frac{f(x + h) - 2f(x) + f(x - h)}{h^2}`);
+        text.push(
+          `f''(${Xinput}) = \\frac{f(${Xinput} + (${H}) - 2f(${Xinput}) + f(${Xinput} - (${H}))}{(${H})^2}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+    } else if (error === "3") {
+      if (direc === "forward") {
+        const result =
+          (35 * Fx(x) -
+            104 * Fx(x + h) -
+            114 * Fx(x + 2 * h) -
+            56 * Fx(x + 3 * h) +
+            11 * Fx(x + 4 * h)) /
+          (12 * Math.pow(h, 4));
+        text.push(
+          `f''(x) = \\frac{35f(x) - 104f(x + h) - 114f(x + 2h) - 56f(x + 3h) + 11f(x + 4h)}{12h^4}`
+        );
+        text.push(
+          `f''(${Xinput}) = \\frac{35f(${Xinput}) - 104f(${Xinput} + (${H})) - 114f(${Xinput} + 2(${H})) - 56f(${Xinput} + 3(${H})) + 11f(${Xinput} + 4(${H}))}{12(${H})^4}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+      if (direc === "backward") {
+        const result =
+          (35 * Fx(x) -
+            104 * Fx(x - h) +
+            114 * Fx(x - 2 * h) -
+            56 * Fx(x - 3 * h) +
+            11 * Fx(x - 4 * h)) /
+          (12 * Math.pow(h, 4));
+        text.push(
+          `f''(x) = \\frac{35f(x) - 104f(x - h) + 114f(x - 2h) - 56f(x - 3h) + 11f(x - 4h)}{12h^4}`
+        );
+        text.push(
+          `f''(${Xinput}) = \\frac{35f(${Xinput}) - 104f(${Xinput} - (${H})) + 114f(${Xinput} - 2(${H})) - 56f(${Xinput} - 3(${H})) + 11f(${Xinput} - 4(${H}))}{12(${H})^4}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+      if (direc === "central") {
+        const result =
+          (-Fx(x + 2 * h) +
+            16 * Fx(x + h) -
+            30 * Fx(x) +
+            16 * Fx(x - h) -
+            Fx(x - 2 * h)) /
+          (12 * Math.pow(h, 4));
+        text.push(
+          `f''(x) = \\frac{-f(x + 2h) + 16f(x + h) - 30f(x) + 16f(x - h) - f(x - 2h)}{12h^4}`
+        );
+        text.push(
+          `f''(${Xinput}) = \\frac{-f(${Xinput} + 2(${H})) + 16f(${Xinput} + (${H})) - 30f(${Xinput}) + 16f(${Xinput} - (${H})) - f(${Xinput} - 2(${H}))}{12(${H})^4}`
+        );
+        text.push(`f''(${Xinput}) = ${result}`);
+
+        setmathExpression(text);
+        return result;
+      }
+    }
+  }
 
   const Check = (x: number) => {
     try {
@@ -50,12 +358,14 @@ function Divied() {
     Check(Xinput);
 
     if (select === "1") {
-      const res = FirstDivied(Error, Direc, Xinput, H, [Check(0)]);
+      console.log("First Divied");
+      const res = FirstDivied(Error, Direc, Xinput, H, functionInput);
+      console.log(res);
       setResult(res !== undefined ? res : 0);
     }
     if (select === "2") {
       console.log("Second Divied");
-      const res = SecondDivied(Error, Direc, Xinput, H, [Check(0)]);
+      const res = SecondDivied(Error, Direc, Xinput, H, functionInput);
       setResult(res !== undefined ? res : 0);
     }
   };
@@ -119,9 +429,9 @@ function Divied() {
                 placeholder="Directions"
                 onChange={(e) => setDirec(e.target.value)}
               >
-                <option value="F">Forward</option>
-                <option value="B">Backward</option>
-                <option value="C">Central</option>
+                <option value="forward">Forward</option>
+                <option value="backward">Backward</option>
+                <option value="central">Central</option>
               </Select>
               <Select
                 placeholder="Error"
@@ -227,8 +537,12 @@ function Divied() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

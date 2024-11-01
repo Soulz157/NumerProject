@@ -21,6 +21,8 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function Newton() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -32,6 +34,7 @@ function Newton() {
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState(0);
   const [selectpoint, setSelectpoint] = React.useState<boolean[]>([false]);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
@@ -74,7 +77,7 @@ function Newton() {
       .map((value, i) => (value ? i : null))
       .filter((value) => value !== null);
     // console.log(select);
-
+    const text = [];
     if (select.length < 2) {
       onOpen();
       return;
@@ -84,15 +87,24 @@ function Newton() {
     const Fxselect = select.map((value) => Fxcal[value]);
 
     const confficients = recursivenewton(Xselect, Fxselect);
+    const tmp = confficients.map((c, index) => `X${index} = ${c}`).join(",");
+    text.push(`\\text{Value: } ${tmp}`);
 
     let result = confficients[0];
     let temp = 1;
+    let reslatex = `${confficients[0]}`;
 
     for (let i = 1; i < confficients.length; i++) {
       temp = temp * (Xinput - Xselect[i - 1]);
       result += confficients[i] * temp;
+      reslatex += ` + (${confficients[i]}) \\cdot (${Xinput} - ${
+        Xselect[i - 1]
+      })`;
     }
+    text.push(`Fx(${Xinput}) = ${reslatex}`);
+    text.push(`\\text{Result: } Fx(${Xinput}) = ${result}`);
 
+    setmathExpression(text);
     setResult(result);
   };
 
@@ -285,8 +297,12 @@ function Newton() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

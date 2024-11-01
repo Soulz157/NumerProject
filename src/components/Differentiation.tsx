@@ -20,7 +20,6 @@ function Differentiation() {
             variant={"filled"}
           >
             <option value="Divied">Divied Difference</option>
-            <option value="Multiple">Multiple Linear Regression</option>
           </Select>
         </AbsoluteCenter>
       </Box>

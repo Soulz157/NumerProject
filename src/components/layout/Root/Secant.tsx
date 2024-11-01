@@ -24,7 +24,6 @@ import {
 } from "@chakra-ui/react";
 import { evaluate, derivative } from "mathjs";
 import { MathJax } from "better-react-mathjax";
-import { on } from "events";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
@@ -100,8 +99,8 @@ function Secant() {
     }
   };
 
-  const error = (xnew: number, xold: number) =>
-    Math.abs((xnew - xold) / xnew) * 100;
+  // const error = (xnew: number, xold: number) =>
+  //   Math.abs((xnew - xold) / xnew) * 100;
 
   const Chartdata = {
     data: [

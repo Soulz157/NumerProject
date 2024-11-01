@@ -21,6 +21,8 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function Lagrange() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -32,6 +34,7 @@ function Lagrange() {
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState(0);
   const [selectpoint, setSelectpoint] = React.useState<boolean[]>([false]);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
@@ -51,6 +54,7 @@ function Lagrange() {
     const n = size;
     const x = [...X];
     const fx = [...Fx];
+    const text = [];
     const select = selectpoint
       .map((value, index) => (value ? index : null))
       .filter((value) => value !== null);
@@ -61,19 +65,24 @@ function Lagrange() {
     }
     const Xselect = select.map((value) => x[value]);
     const fxselect = select.map((value) => fx[value]);
-
+    text.push(`\\text{Lagrange Interpolation}`);
     let result = 0;
 
     for (let i = 0; i < n; i++) {
       let temp = fxselect[i];
+      const t1 = `f(x_{${select[i]}}) = ${fx[select[i]].toFixed(6)}`;
+      let t2 = `L_{${select[i]}}(x) = ${fx[select[i]].toFixed(6)}`;
       for (let j = 0; j < n; j++) {
         if (i !== j) {
           temp *= (Xinput - Xselect[j]) / (Xselect[i] - Xselect[j]);
+          t2 += `\\left(\\frac{x - x_{${select[j]}}}{x_{${select[i]}} - x_{${select[j]}}}\\right)`;
         }
       }
       result += temp;
+      text.push(`${t1} \\cdot ${t2}`);
     }
-
+    text.push(`\\text{Result: } L(${Xinput}) = ${result.toFixed(6)}`);
+    setmathExpression(text);
     setResult(result);
   };
 
@@ -255,8 +264,12 @@ function Lagrange() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

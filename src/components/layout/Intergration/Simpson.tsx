@@ -22,6 +22,8 @@ import {
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function Simpson() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -31,6 +33,7 @@ function Simpson() {
   const [Xstart, setXstart] = React.useState(0);
   const [Xend, setXend] = React.useState(0);
   const [result, setResult] = React.useState(0);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
 
   const Check = (x: number) => {
     try {
@@ -53,6 +56,18 @@ function Simpson() {
 
     const h = (Xend - Xstart) / 2;
     const result = (h / 3) * (fx(Xstart) + 4 * fx(Xstart + h) + fx(Xend));
+
+    const text = [];
+    text.push(`f(x{0}) = f(${Xstart}) = ${fx(Xstart)}`);
+    text.push(`f(x{1}) = f(${Xstart + h}) = ${fx(Xstart + h)}`);
+    text.push(`f(x{2}) = f(${Xend}) = ${fx(Xend)}`);
+    text.push(
+      `F(x) = \\frac{h}{3} \\cdot (f(a) + 4f(x{1}) + f(b)) = \\frac{${h}}{3} \\cdot (${fx(
+        Xstart
+      )} + 4 \\cdot ${fx(Xstart + h)} + ${fx(Xend)}) = ${result.toFixed(6)}`
+    );
+
+    setmathExpression(text);
     setResult(result);
   };
 
@@ -217,8 +232,12 @@ function Simpson() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

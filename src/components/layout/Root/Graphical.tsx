@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import dynamic from "next/dynamic";
 import {
   Box,
@@ -21,15 +22,17 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  ButtonGroup,
+  NumberInput,
+  NumberInputField,
 } from "@chakra-ui/react";
 import { evaluate } from "mathjs";
 import { MathJax } from "better-react-mathjax";
-
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
+
 function Graphical() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
-  const [tolence, setTolence] = React.useState(false);
 
   const [functionInput, setFunctionInput] = React.useState("x^2 - 4");
   const [xstart, setxstart] = React.useState(0.0);
@@ -44,6 +47,30 @@ function Graphical() {
     },
   ]);
   const [datachart, setDatachart] = React.useState([{ x: 0, y: 0 }]);
+
+  const fetchdata = async () => {
+    try {
+      const response = await axios.get("http://localhost:8000/info/root");
+      if (response.data.result) {
+        const data = response.data.data;
+        const random = Math.floor(Math.random() * data.length);
+        const func = data[random].solution;
+        const xs = data[random].xl;
+        const xe = data[random].xr;
+        console.log(func);
+        console.log(xs);
+        console.log(xe);
+        setFunctionInput(func);
+        setxstart(xs);
+        setxend(xe);
+        // setData([]);
+        // setDatachart([]);
+        setX(0.0);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const calGraphical = (xl: number, xr: number) => {
     const fx = (x: number) => {
@@ -131,9 +158,8 @@ function Graphical() {
   const Checkfunction = (x: number) => {
     try {
       evaluate(functionInput, { x: x });
-      setTolence(false);
     } catch {
-      setTolence(true);
+      onOpen();
     }
   };
 
@@ -145,7 +171,7 @@ function Graphical() {
 
   return (
     <>
-      {tolence && (
+      {
         <AlertDialog
           isOpen={isOpen}
           leastDestructiveRef={cancelRef}
@@ -169,7 +195,7 @@ function Graphical() {
             </AlertDialogContent>
           </AlertDialogOverlay>
         </AlertDialog>
-      )}
+      }
       <Box
         textAlign="center"
         fontSize="xl"
@@ -227,51 +253,66 @@ function Graphical() {
                 <MathJax>{"`X Start`"}</MathJax>
               </Text>
               <Box padding={2}>
-                <Input
-                  // value={xl}
-                  onChange={(e) => {
-                    setxstart(parseFloat(e.target.value));
+                <NumberInput
+                  value={xstart ? xstart : 0}
+                  onChange={(valueAsString, valueAsNumber) => {
+                    setxstart(valueAsNumber);
                   }}
                   variant="filled"
                   size="md"
-                  placeholder="0.00"
+                  defaultValue={0.0}
                   _placeholder={{ opacity: 1, color: "gray.500" }}
                   isInvalid
                   errorBorderColor="gray.500"
-                />
+                >
+                  <NumberInputField />
+                </NumberInput>
               </Box>
               <Box>
                 <Text fontSize="xl" fontWeight="bold" color="white">
                   <MathJax>{"`X End`"}</MathJax>
                 </Text>
                 <Box padding={2}>
-                  <Input
-                    // value={xr}
-                    onChange={(e) => {
-                      setxend(parseFloat(e.target.value));
+                  <NumberInput
+                    value={xend ? xend : 0}
+                    onChange={(valueAsString, valueAsNumber) => {
+                      setxend(parseFloat(valueAsNumber.toString()));
                     }}
                     variant="filled"
                     size="md"
-                    placeholder="0.00"
                     _placeholder={{ opacity: 1, color: "gray.500" }}
                     isInvalid
                     errorBorderColor="gray.500"
-                  />
+                  >
+                    <NumberInputField />
+                  </NumberInput>
                 </Box>
               </Box>
               <Box mt={10}>
-                <Button
-                  variant="outline"
-                  borderColor={"white"}
-                  fontWeight="bold"
-                  fontSize={"lg"}
-                  onClick={() => {
-                    calroot();
-                    onOpen();
-                  }}
-                >
-                  Calculate
-                </Button>
+                <ButtonGroup gap={3}>
+                  <Button
+                    variant="outline"
+                    colorScheme="teal"
+                    fontWeight="bold"
+                    fontSize={"lg"}
+                    onClick={() => {
+                      fetchdata();
+                    }}
+                  >
+                    Random
+                  </Button>
+                  <Button
+                    variant="outline"
+                    borderColor={"white"}
+                    fontWeight="bold"
+                    fontSize={"lg"}
+                    onClick={() => {
+                      calroot();
+                    }}
+                  >
+                    Calculate
+                  </Button>
+                </ButtonGroup>
               </Box>
               <Box mt={10}>
                 <Text fontSize="xl" fontWeight="bold" color="white">

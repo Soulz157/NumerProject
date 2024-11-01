@@ -22,6 +22,8 @@ import {
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
 
 function CompositeTrap() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -32,6 +34,8 @@ function CompositeTrap() {
   const [Xend, setXend] = React.useState(0);
   const [n, setn] = React.useState(0);
   const [result, setResult] = React.useState(0);
+  // const [chartdata, setchartdata] = React.useState<any>([]);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
 
   const calTrap = () => {
     const fx = (x: number) => {
@@ -51,6 +55,17 @@ function CompositeTrap() {
     }
 
     result *= h / 2;
+    const text = [];
+    text.push(
+      `F(x) = \\frac{h}{2} \\cdot (f(a) + f(b)) + 2 \\sum_{i=1}^{N-1} f(x_{i})`
+    );
+    text.push(`h = \\frac{${Xend} - ${Xstart}}{${n}} = ${h}`);
+    text.push(
+      `F(x) = \\frac{${h}}{2} \\cdot \\left(${fx(Xstart)} + ${fx(
+        Xend
+      )} + 2 \\sum_{i=1}^{${n - 1}} f(x_{i}) \\right) = ${result}`
+    );
+    setmathExpression(text);
     setResult(parseFloat(result.toFixed(6)));
   };
 
@@ -245,8 +260,12 @@ function CompositeTrap() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>

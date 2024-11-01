@@ -1,4 +1,5 @@
 import React from "react";
+import dynamic from "next/dynamic";
 import {
   useDisclosure,
   AlertDialog,
@@ -22,6 +23,9 @@ import {
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { det } from "mathjs";
+import { BlockMath } from "react-katex";
+import "katex/dist/katex.min.css";
+const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
 function Regression() {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -33,6 +37,47 @@ function Regression() {
   const [Xinput, setXinput] = React.useState(0);
   const [result, setResult] = React.useState<number[]>([]);
   const [morder, setMorder] = React.useState(0);
+  const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+  const [datachart, setDatachart] = React.useState<number[]>([]);
+  const [dataline, setDataline] = React.useState<number[]>([]);
+
+  const Chartdata: {
+    data: Partial<Plotly.Data>[];
+    layout: Partial<Plotly.Layout>;
+  } = {
+    data: [
+      {
+        type: "scatter",
+        mode: "markers",
+        x: [Xinput],
+        y: Fx,
+        marker: { color: "red", size: 8 },
+        name: "Point",
+      },
+      {
+        type: "scatter",
+        mode: "lines",
+        x: X,
+        y: dataline,
+        line: { color: "orange", width: 5 },
+        name: "Regression Line",
+      },
+      {
+        type: "scatter",
+        mode: "markers",
+        x: [Xinput],
+        y: [datachart],
+        marker: { color: "blue", size: 12 },
+        name: `Predicted Point f(${Xinput})`,
+      },
+    ],
+
+    layout: {
+      title: "Least-Squares Regression Plot",
+      xaxis: { title: "X" },
+      yaxis: { title: "f(X)" },
+    },
+  };
 
   const Showmatrix = (valueAsNumber: number) => {
     if (valueAsNumber > 20) {
@@ -51,6 +96,7 @@ function Regression() {
   };
 
   const calregression = () => {
+    const text = [];
     const x = [...X];
     const y = [...Fx];
     const m = morder;
@@ -69,7 +115,14 @@ function Regression() {
 
     const temp: number[] = [];
     const detA = det(A);
+    const matrixtext = `\\begin{bmatrix} ${A.map((row) => row.join(" & ")).join(
+      " \\\\ "
+    )} \\end{bmatrix}`;
+    const constantstext = `\\begin{bmatrix} ${B.join(" & ")} \\end{bmatrix}`;
     // console.log(detA);
+
+    text.push(`\\text{Matrix : } ${matrixtext}`);
+    text.push(`\\text{Matrix B : } ${constantstext}`);
     for (let i = 0; i < n; i++) {
       const newMatrix = A.map((row) => [...row]);
       for (let j = 0; j < n; j++) {
@@ -78,8 +131,39 @@ function Regression() {
       const detAi = det(newMatrix);
       // console.log(detAi);
       temp.push(detAi / detA);
+      text.push(
+        `a_${i} = \\frac{\\text{det}(a_{${i}})}{\\text{det}(A)} = \\frac{${detAi}}{${detA}} = ${temp[i]}`
+      );
     }
+
+    temp.forEach((solution, i) => {
+      text.push(`a_${i} = ${solution.toFixed(6)}`);
+    });
+
+    let result;
+    for (let i = 0; i < m; i++) {
+      text.push(`f(x) = a${i} + a${i + 1} \\cdot x`);
+    }
+    // console.log(t1)
+    for (let i = 0; i < temp.length; i++) {
+      result = temp[0] + temp[1] * Xinput;
+      setDatachart([result]);
+    }
+
+    text.push(`f(${Xinput}) = ${result}`);
+
+    setmathExpression(text);
     setResult(temp.map((num) => parseFloat(num.toFixed(6))));
+
+    const lineYValues = x.map((x) => {
+      let y = temp[0];
+      if (m >= 1) {
+        y += temp[1] * x;
+      }
+      return y;
+    });
+
+    setDataline(lineYValues);
   };
 
   const calroot = () => {
@@ -304,8 +388,24 @@ function Regression() {
           {/* </HStack> */}
         </Box>
         <Text p={2}>Step Calculate</Text>
-        <Box bg={"white"} w={800} h={500}>
-          {" "}
+        <Box w={800} mt={2} color="white">
+          {datachart.length > 0 && (
+            <Plot
+              data={Chartdata.data}
+              layout={{
+                ...Chartdata.layout,
+                autosize: true,
+              }}
+              style={{ width: "100%", height: "100%" }}
+            />
+          )}
+        </Box>
+        <Box w={800} mt={2} color="white">
+          {mathExpression.map((text, index) => (
+            <Box key={index} p={3}>
+              <BlockMath>{text}</BlockMath>
+            </Box>
+          ))}
         </Box>
       </Container>
     </>
