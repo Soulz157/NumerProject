@@ -25,7 +25,7 @@ export default function Home() {
               variant={"ghost"}
               borderRadius={10}
             >
-              Get Start
+              <h1>Get Start</h1>
             </Button>
           </Link>
           {/* <Link href="/temp">

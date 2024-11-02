@@ -27,7 +27,7 @@ function Temp() {
   >([]);
 
   const readdata = async () => {
-    const respone = await axios.get("http://localhost:8000/api");
+    const respone = await axios.get("http://localhost:8000/info/Integration");
     console.log(respone.data);
     if (respone.data.result) {
       const data = respone.data.data;

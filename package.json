@@ -6,14 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "vitest"
   },
   "dependencies": {
     "@chakra-ui/icons": "^2.1.1",
     "@chakra-ui/react": "^2.10.3",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@testing-library/react": "^16.0.1",
     "@types/react-plotly.js": "^2.6.3",
+    "@vitejs/plugin-react": "^4.3.3",
     "axios": "^1.7.7",
     "better-react-mathjax": "^2.0.3",
     "chart.js": "^4.4.4",
@@ -38,6 +41,8 @@
     "@types/react-katex": "^3.0.4",
     "eslint": "^8",
     "eslint-config-next": "14.2.11",
-    "typescript": "^5"
+    "jsdom": "^25.0.1",
+    "typescript": "^5",
+    "vitest": "^2.1.4"
   }
 }

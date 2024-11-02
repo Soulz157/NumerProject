@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import {
   Box,
   Text,
@@ -19,6 +20,7 @@ import {
   HStack,
   Stack,
   Input,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
@@ -36,6 +38,26 @@ function CompositeTrap() {
   const [result, setResult] = React.useState(0);
   // const [chartdata, setchartdata] = React.useState<any>([]);
   const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+
+  const readdata = async () => {
+    const respone = await axios.get(
+      "http://192.168.1.136:8000/info/Integration"
+    );
+    console.log(respone.data);
+    if (respone.data.result) {
+      const data = respone.data.data;
+      const random = Math.floor(Math.random() * data.length);
+      const so = data[random].solution;
+      const area = data[random].n;
+      const xs = data[random].xstart;
+      const xe = data[random].xend;
+
+      setn(area);
+      setFunctionInput(so);
+      setXstart(xs);
+      setXend(xe);
+    }
+  };
 
   const calTrap = () => {
     const fx = (x: number) => {
@@ -219,15 +241,28 @@ function CompositeTrap() {
           </HStack>
         </Box>
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup>
+            <Button
+              variant="outline"
+              borderColor={"gray.500"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={calroot}
+            >
+              Calculate
+            </Button>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                readdata();
+              }}
+            >
+              Random
+            </Button>
+          </ButtonGroup>
         </Box>
         <Box p={2}></Box>
       </Container>

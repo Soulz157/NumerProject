@@ -1,4 +1,5 @@
 import React from "react";
+import axios from "axios";
 import dynamic from "next/dynamic";
 import {
   Box,
@@ -45,6 +46,24 @@ function Compositesim() {
       y: number;
     }[]
   >([]);
+
+  const fetchdata = async () => {
+    const respone = await axios.get("http://localhost:8000/info/Integration");
+    console.log(respone.data);
+    if (respone.data.result) {
+      const data = respone.data.data;
+      const random = Math.floor(Math.random() * data.length);
+      const so = data[random].solution;
+      const area = data[random].n;
+      const xs = data[random].xstart;
+      const xe = data[random].xend;
+
+      setn(area);
+      setFunctionInput(so);
+      setXstart(xs);
+      setXend(xe);
+    }
+  };
 
   const Check = (x: number) => {
     try {
@@ -292,6 +311,17 @@ function Compositesim() {
               onClick={calroot}
             >
               Calculate
+            </Button>
+            <Button
+              variant="outline"
+              colorScheme="teal"
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                fetchdata();
+              }}
+            >
+              Random
             </Button>
             <Button
               colorScheme="red"
