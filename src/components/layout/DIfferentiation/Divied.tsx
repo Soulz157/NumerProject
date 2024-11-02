@@ -153,6 +153,7 @@ function Divied() {
             16 * Fx(x - 3 * h) +
             3 * Fx(x - 4 * h)) /
           (12 * h);
+
         text.push(
           `f'(x) = \\frac{25f(x) -
             48f(x - h) +
@@ -358,13 +359,13 @@ function Divied() {
     Check(Xinput);
 
     if (select === "1") {
-      console.log("First Divied");
+      // console.log("First Divied");
       const res = FirstDivied(Error, Direc, Xinput, H, functionInput);
       console.log(res);
       setResult(res !== undefined ? res : 0);
     }
     if (select === "2") {
-      console.log("Second Divied");
+      // console.log("Second Divied");
       const res = SecondDivied(Error, Direc, Xinput, H, functionInput);
       setResult(res !== undefined ? res : 0);
     }
