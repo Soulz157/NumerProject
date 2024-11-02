@@ -28,11 +28,11 @@ export default function Home() {
               Get Start
             </Button>
           </Link>
-          <Link href="/temp">
+          {/* <Link href="/temp">
             <Button colorScheme="teal" variant={"ghost"}>
               asdadadad
             </Button>
-          </Link>
+          </Link> */}
         </Container>
       </Box>
     </ChakraProvider>

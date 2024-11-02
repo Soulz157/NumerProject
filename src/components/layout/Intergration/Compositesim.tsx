@@ -20,6 +20,7 @@ import {
   HStack,
   Stack,
   Input,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { evaluate } from "mathjs";
@@ -88,6 +89,7 @@ function Compositesim() {
         });
       }
     }
+
     result *= area / 3;
 
     const text = [];
@@ -172,6 +174,7 @@ function Compositesim() {
           </AlertDialog>
         </>
       }
+
       <Container maxW="2xl" centerContent mt={30}>
         <Box
           padding="4"
@@ -280,15 +283,33 @@ function Compositesim() {
           </HStack>
         </Box>
         <Box p={2}>
-          <Button
-            variant="outline"
-            borderColor={"gray.500"}
-            fontWeight="bold"
-            fontSize={"lg"}
-            onClick={calroot}
-          >
-            Calculate
-          </Button>
+          <ButtonGroup gap={2}>
+            <Button
+              variant="outline"
+              borderColor={"gray.500"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={calroot}
+            >
+              Calculate
+            </Button>
+            <Button
+              colorScheme="red"
+              borderColor={"white"}
+              fontWeight="bold"
+              fontSize={"lg"}
+              onClick={() => {
+                setFunctionInput("...");
+                setn(0);
+                setXstart(0);
+                setXend(0);
+                setResult(0);
+                setchartdata([]);
+              }}
+            >
+              Reset
+            </Button>
+          </ButtonGroup>
         </Box>
         <Box p={2}></Box>
       </Container>
