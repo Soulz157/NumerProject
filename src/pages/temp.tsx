@@ -23,7 +23,7 @@ function Temp() {
   const [Xstart, setXstart] = React.useState(0);
   const [Xend, setXend] = React.useState(0);
   const [chartdata, setchartdata] = React.useState<
-    { x: number; y: number; result: number }[]
+    { x: number; result: number }[]
   >([]);
 
   const readdata = async () => {
@@ -61,7 +61,6 @@ function Temp() {
     result += fx(Xstart) + fx(Xend);
     chart.push({
       x: Xstart,
-      y: fx(Xstart),
       result: result,
     });
 
@@ -70,25 +69,18 @@ function Temp() {
         result += 2 * fx(Xstart + i * area);
         chart.push({
           x: Xstart + i * area,
-          y: fx(Xstart + i * area),
           result: result,
         });
       } else {
         result += 4 * fx(Xstart + i * area);
         chart.push({
           x: Xstart + i * area,
-          y: fx(Xstart + i * area),
           result: result,
         });
       }
     }
 
     result *= area / 3;
-    // chart.push({
-    //   x: Xend,
-    //   y: fx(Xend),
-    //   result: result,
-    // });
 
     setchartdata(chart);
     setResult(parseFloat(result.toFixed(6)));
@@ -99,13 +91,6 @@ function Temp() {
     layout: Partial<Plotly.Layout>;
   } = {
     data: [
-      // {
-      //   x: chartdata.map((point) => point.x),
-      //   y: chartdata.map((point) => point.y),
-      //   type: "scatter" as const,
-      //   mode: "lines" as const,
-      //   line: { color: "blue", shape: "spline" } as const,
-      // },
       {
         x: chartdata.map((point) => point.x),
         y: chartdata.map((point) => point.result),

@@ -28,7 +28,7 @@ export default function Home() {
               Get Start
             </Button>
           </Link>
-          <Link href="/re">
+          <Link href="/temp">
             <Button colorScheme="teal" variant={"ghost"}>
               asdadadad
             </Button>

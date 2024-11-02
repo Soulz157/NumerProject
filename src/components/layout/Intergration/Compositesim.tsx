@@ -1,4 +1,5 @@
 import React from "react";
+import dynamic from "next/dynamic";
 import {
   Box,
   Text,
@@ -25,6 +26,8 @@ import { evaluate } from "mathjs";
 import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
 
+const Plotly = dynamic(() => import("react-plotly.js"), { ssr: false });
+
 function Compositesim() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
@@ -35,6 +38,12 @@ function Compositesim() {
   const [n, setn] = React.useState(0);
   const [result, setResult] = React.useState(0);
   const [mathExpression, setmathExpression] = React.useState<string[]>([]);
+  const [chartdata, setchartdata] = React.useState<
+    {
+      x: number;
+      y: number;
+    }[]
+  >([]);
 
   const Check = (x: number) => {
     try {
@@ -54,16 +63,29 @@ function Compositesim() {
         return NaN;
       }
     };
+    const chart = [];
     const h = (Xend - Xstart) / n;
     const area = h / 2;
     let result = 0;
     result += fx(Xstart) + fx(Xend);
+    chart.push({
+      x: Xstart,
+      y: result,
+    });
 
     for (let i = 1; i < n * 2 - 1; i++) {
       if (i % 2 === 0) {
         result += 2 * fx(Xstart + i * area);
+        chart.push({
+          x: Xstart + i * area,
+          y: result,
+        });
       } else {
         result += 4 * fx(Xstart + i * area);
+        chart.push({
+          x: Xstart + i * area,
+          y: result,
+        });
       }
     }
     result *= area / 3;
@@ -75,6 +97,7 @@ function Compositesim() {
     text.push(`h = \\frac{${Xend} - ${Xstart}}{${n}} = ${h}`);
     text.push(`!Tip\\frac{${h}}2 = ${area}`);
 
+    setchartdata(chart);
     setmathExpression(text);
     setResult(parseFloat(result.toFixed(6)));
   };
@@ -84,6 +107,42 @@ function Compositesim() {
     calsimpson();
   };
 
+  const getGraphData: {
+    data: Partial<Plotly.PlotData>[];
+    layout: Partial<Plotly.Layout>;
+  } = {
+    data: [
+      {
+        name: "F(x)",
+        x: chartdata.map((data) => data.x),
+        y: chartdata.map((data) => data.y),
+        type: "scatter",
+        mode: "lines",
+        line: { color: "blue" },
+      },
+      {
+        name: "Area",
+        x: chartdata.map((point) => point.x),
+        y: chartdata.map((point) => point.y),
+        fill: "tozeroy",
+        type: "scatter" as const,
+        mode: "lines" as const,
+        fillcolor: "rgba(0, 100, 255, 0.3)",
+        line: { color: "rgba(0, 100, 255, 0)" },
+      },
+    ],
+    layout: {
+      title: "Simpson's Rule",
+      xaxis: {
+        title: "X",
+        showline: true,
+      },
+      yaxis: {
+        title: "Y",
+        showline: true,
+      },
+    },
+  };
   return (
     <>
       {
@@ -124,10 +183,10 @@ function Compositesim() {
           <Box px={20}>
             <Text mt={2} p={2}>
               <MathJax inline dynamic>
-                {"`F(x) = $`".replaceAll(
-                  "$",
-                  functionInput ? functionInput : "..."
-                )}
+                {"`\\int_{a}^{b} \\ $`"
+                  .replaceAll("a", Xstart.toString())
+                  .replaceAll("b", Xend.toString())
+                  .replaceAll("$", functionInput ? functionInput : "...")}
               </MathJax>
             </Text>
             <Text fontSize="lg" fontWeight="bold" color="white" p={2}>
@@ -262,6 +321,10 @@ function Compositesim() {
           </HStack>
         </Box>
         <Text p={2}>Step Calculate</Text>
+        <Box mt={2}>
+          <Plotly data={getGraphData.data} layout={getGraphData.layout} />
+        </Box>
+
         <Box w={800} mt={2} color="white">
           {mathExpression.map((text, index) => (
             <Box key={index} p={3}>
