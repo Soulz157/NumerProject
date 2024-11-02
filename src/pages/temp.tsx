@@ -37,7 +37,7 @@ function Temp() {
       const xs = data[random].xstart;
       const xe = data[random].xend;
 
-      setN(area);
+      setN(area + 1);
       setSolution(so);
       setXstart(xs);
       setXend(xe);
