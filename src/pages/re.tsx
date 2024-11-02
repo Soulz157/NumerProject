@@ -32,7 +32,7 @@ function Re() {
       const random = Math.floor(Math.random() * data.length);
       const so = data[random].solution;
       const n = data[random].n;
-      const xs = data[random]
+      const xs = data[random];
     }
   };
 
