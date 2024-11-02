@@ -20,6 +20,7 @@ import {
   NumberDecrementStepper,
   HStack,
   Stack,
+  Divider,
 } from "@chakra-ui/react";
 import { MathJax } from "better-react-mathjax";
 import { det } from "mathjs";
@@ -332,6 +333,7 @@ function Regression() {
               </HStack>
             ))}
         </Box>
+        <Divider p={2}></Divider>
       </Container>
       <Container
         maxW="2xl"
@@ -345,22 +347,6 @@ function Regression() {
           <Text fontSize="xl" fontWeight="bold" color="white">
             Result
           </Text>
-
-          {/* <HStack padding={2}>
-            <MathJax>
-              {"`F($)`".replaceAll("$", Xinput ? Xinput.toString() : "x")}
-            </MathJax>
-            <MathJax>{"`=`"}</MathJax>
-            <Input
-              variant="filled"
-              width={"max-content"}
-              size="sm"
-              value={result}
-              placeholder={"-"}
-              _placeholder={{ opacity: 1, color: "gray.500" }}
-              isReadOnly
-              errorBorderColor="gray.500"
-            /> */}
 
           <Box p={2}>
             {size > 0 &&

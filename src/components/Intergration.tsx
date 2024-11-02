@@ -4,6 +4,7 @@ import Trapezoidal from "./layout/Intergration/Trapezoidal";
 import CompositeTrap from "./layout/Intergration/CompositeTrap";
 import Simpson from "./layout/Intergration/Simpson";
 import Compositesim from "./layout/Intergration/Compositesim";
+import Compo from "./layout/Intergration/compo";
 
 function Intergration() {
   const [solution, setSolution] = React.useState(" ");
@@ -27,6 +28,7 @@ function Intergration() {
             <option value="Compo">Composite Trapezoidal Rule</option>
             <option value="Sim">Simpson&apos;s Rule</option>
             <option value="Comsim">Composite Simpson&apos;s Rule</option>
+            <option value="Com">Composite</option>
           </Select>
         </AbsoluteCenter>
       </Box>
@@ -35,6 +37,7 @@ function Intergration() {
       <Box mt={5}>{solution === "Compo" && <CompositeTrap />}</Box>
       <Box mt={5}>{solution === "Sim" && <Simpson />}</Box>
       <Box mt={5}>{solution === "Comsim" && <Compositesim />}</Box>
+      <Box mt={5}>{solution === "Com" && <Compo />}</Box>
     </>
   );
 }
