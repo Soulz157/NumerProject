@@ -31,7 +31,7 @@ import { MathJax } from "better-react-mathjax";
 
 const Plot = dynamic(() => import("react-plotly.js"), { ssr: false });
 
-function Biesection(p0: { name: string }) {
+function Biesection() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
 

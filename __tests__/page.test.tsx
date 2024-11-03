@@ -1,10 +1,9 @@
-import { expect, expectTypeOf, test } from "vitest";
+import { assertType, expect, expectTypeOf, test } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 import Page from "../src/pages/index";
 import Biesection from "../src/components/layout/Root/Biesection";
 import { it } from "node:test";
-import { assert } from "node:console";
 
 test("Page", () => {
   render(<Page />);
@@ -27,7 +26,7 @@ test("Button", () => {
 
 test("func", () => {
   it("should render", () => {
-    render(<Biesection name={""} />);
+    render(<Biesection />);
     expect(screen.getByRole("main")).toBeDefined();
     const func = screen.getByRole("textbox", {
       name: "function",
@@ -37,7 +36,7 @@ test("func", () => {
     expectTypeOf(Biesection).toMatchTypeOf<
       (props: { name: string }) => JSX.Element
     >();
-    assert(Biesection({ name: "x^2" }));
+    assertType(Biesection());
     expect(func.value).toBe("x^2");
   });
 });
